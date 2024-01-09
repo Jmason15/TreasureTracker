@@ -2,9 +2,13 @@ package com.finance.treasuretracker.view;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
+
+import com.finance.treasuretracker.view.tabs.accounts.AccountsPanel;
+import com.finance.treasuretracker.view.tabs.banks.BanksPanel;
+import com.finance.treasuretracker.view.tabs.bills.BillsPanel;
 import com.finance.treasuretracker.view.tabs.configuration.ConfigurationPanel;
+import com.finance.treasuretracker.view.tabs.summary.SummaryPanel;
+import com.finance.treasuretracker.view.tabs.transactions.TransactionsPanel;
 
 public class MainView {
     public static void createAndShowGUI() {
@@ -14,34 +18,25 @@ public class MainView {
 
         Menu menu = new Menu();
         menu.setupMenu(frame);
-// Creating panels for each tab
 
-        JPanel summaryPanel = new JPanel();
-        JPanel configurePanel = new JPanel();
-        JPanel transactionsPanel = new JPanel();
-
-        summaryPanel.setLayout(new BorderLayout());
-        JLabel summaryLabel = new JLabel("Summary Information");
-        summaryPanel.add(summaryLabel, BorderLayout.NORTH);
-
-
-
-        transactionsPanel.setLayout(new GridLayout(1, 1));
-        JTable transactionsTable = new JTable(); // You might want to populate this with data
-        transactionsPanel.add(new JScrollPane(transactionsTable));
-
-
-// Create an instance of ConfigurationPanel and add it to the tabbed pane
-        ConfigurationPanel configPanel = new ConfigurationPanel();
 
         JTabbedPane tabbedPane = new JTabbedPane();
-        tabbedPane.addTab("Summary", summaryPanel);
-        tabbedPane.addTab("Transactions", transactionsPanel);
-        tabbedPane.addTab("Configure", configPanel);
+        tabbedPane.addTab("Summary", new SummaryPanel());
+        tabbedPane.addTab("Transactions", new TransactionsPanel());
+        tabbedPane.addTab("Bills", new BillsPanel());
+        tabbedPane.addTab("Banks",  new BanksPanel());
+        tabbedPane.addTab("Accounts", new AccountsPanel());
+        tabbedPane.addTab("Configure", new ConfigurationPanel());
         frame.add(tabbedPane);
 
         frame.pack();
         // Show the frame
         frame.setVisible(true);
+    }
+
+    private static void setupPanel(JPanel summaryPanel) {
+        summaryPanel.setLayout(new BorderLayout());
+        JLabel summaryLabel = new JLabel("Summary Information");
+        summaryPanel.add(summaryLabel, BorderLayout.NORTH);
     }
 }

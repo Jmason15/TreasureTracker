@@ -18,42 +18,38 @@ public class ConfigurationPanel extends JPanel {
         JPanel sidePanel = new JPanel();
         sidePanel.setLayout(new BoxLayout(sidePanel, BoxLayout.Y_AXIS));
 
-        JButton accountButton = new JButton("Account");
-        JButton bankButton = new JButton("Bank");
-        JButton billButton = new JButton("Bill");
+        JButton dropdownButton = new JButton("Dropdown");
+        JButton dropdownTypeButton = new JButton("Dropdown Type");
 
-        JPanel buttonPanel = new JPanel(new GridLayout(0, 1)); // 0 rows, 1 column
-        buttonPanel.add(accountButton);
-        buttonPanel.add(bankButton);
-        buttonPanel.add(billButton);
-        // ... add buttons for Dropdown and DropdownType
+        Dimension buttonSize = new Dimension(200, 30); // Example size, adjust as needed
+        sizeButtons(dropdownButton, buttonSize);
+        sizeButtons(dropdownTypeButton, buttonSize);
 
         // Add action listeners
-        accountButton.addActionListener(e -> cardLayout.show(cards, "Account"));
-        bankButton.addActionListener(e -> cardLayout.show(cards, "Bank"));
-        billButton.addActionListener(e -> cardLayout.show(cards, "Bill"));
-        // ... similar for Dropdown and DropdownType
+        dropdownButton.addActionListener(e -> cardLayout.show(cards, "Dropdown"));
+        dropdownTypeButton.addActionListener(e -> cardLayout.show(cards, "Dropdown Type"));
 
-        sidePanel.add(buttonPanel);
-
-        // ... add the rest of the buttons
+        sidePanel.add(dropdownButton);
+        sidePanel.add(dropdownTypeButton);
 
         add(sidePanel, BorderLayout.WEST);
+    }
+
+    private static void sizeButtons(JButton accountButton, Dimension buttonSize) {
+        accountButton.setPreferredSize(buttonSize);
+        accountButton.setMinimumSize(buttonSize);
+        accountButton.setMaximumSize(buttonSize);
     }
 
     private void initializeCards() {
         cards = new JPanel(new CardLayout());
         cardLayout = (CardLayout)(cards.getLayout());
 
-        JPanel accountPanel = new JPanel(); // Add components for account management
-        JPanel bankPanel = new JPanel();    // Add components for bank management
-        JPanel billPanel = new JPanel();    // Add components for bill management
-        // ... create panels for Dropdown and DropdownType
+        JPanel dropdownPanel = new JPanel(); // Add components for account management
+        JPanel dropdownTypePanel = new JPanel();    // Add components for bank management
 
-        cards.add(accountPanel, "Account");
-        cards.add(bankPanel, "Bank");
-        cards.add(billPanel, "Bill");
-        // ... add the rest of the panels
+        cards.add(dropdownPanel, "Account");
+        cards.add(dropdownTypePanel, "Bank");
 
         add(cards, BorderLayout.CENTER);
     }
