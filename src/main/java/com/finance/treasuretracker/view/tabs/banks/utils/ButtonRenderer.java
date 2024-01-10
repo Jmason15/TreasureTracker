@@ -1,4 +1,4 @@
-package com.finance.treasuretracker.view.utils;
+package com.finance.treasuretracker.view.tabs.banks.utils;
 
 import javax.swing.*;
 import javax.swing.table.TableCellRenderer;
