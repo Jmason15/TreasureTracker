@@ -1,6 +1,6 @@
-package com.finance.treasuretracker.view.tabs.configuration;
+package com.finance.treasuretracker.view.tabs.menu;
 
-import com.finance.treasuretracker.view.tabs.configuration.utils.DropdownButtonEditor;
+import com.finance.treasuretracker.view.tabs.menu.utils.DropdownButtonEditor;
 import com.finance.treasuretracker.view.tabs.utils.ButtonRenderer;
 
 import javax.swing.*;

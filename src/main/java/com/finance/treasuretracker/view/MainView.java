@@ -10,7 +10,7 @@ import com.finance.treasuretracker.controller.DropdownTypeController;
 import com.finance.treasuretracker.view.tabs.accounts.AccountsView;
 import com.finance.treasuretracker.view.tabs.banks.BanksView;
 import com.finance.treasuretracker.view.tabs.bills.BillsPanel;
-import com.finance.treasuretracker.view.tabs.configuration.ConfigurationPanel;
+import com.finance.treasuretracker.view.tabs.menu.Menu;
 import com.finance.treasuretracker.view.tabs.summary.SummaryPanel;
 import com.finance.treasuretracker.view.tabs.transactions.TransactionsPanel;
 
@@ -18,10 +18,10 @@ public class MainView {
     public static void createAndShowGUI(AccountController accountController, BankController bankController, DropdownController dropdownController, DropdownTypeController dropdownTypeController) {
         JFrame frame = new JFrame("Treasure Tracker");
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        frame.setSize(500, 400);
+        frame.setSize(2000, 1600);
 
-        Menu menu = new Menu();
-        menu.setupMenu(frame);
+        com.finance.treasuretracker.view.tabs.menu.Menu menu = new Menu();
+        menu.setupMenu(frame, dropdownTypeController);
 
         JTabbedPane tabbedPane = new JTabbedPane();
         tabbedPane.addTab("Summary", new SummaryPanel());
@@ -29,7 +29,6 @@ public class MainView {
         tabbedPane.addTab("Bills", new BillsPanel());
         tabbedPane.addTab("Banks", new BanksView(bankController)); // Pass the controller here
         tabbedPane.addTab("Accounts", new AccountsView(accountController, bankController, dropdownController, dropdownTypeController));
-        tabbedPane.addTab("Configure", new ConfigurationPanel());
         frame.add(tabbedPane);
 
         frame.pack();

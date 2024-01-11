@@ -1,23 +1,23 @@
-package com.finance.treasuretracker.view.tabs.configuration.utils;
+package com.finance.treasuretracker.view.tabs.menu.utils;
 
-import com.finance.treasuretracker.view.tabs.configuration.DropdownTypePanel;
+import com.finance.treasuretracker.view.tabs.menu.DropdownPanel;
 
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
-public class DropdownTypeButtonEditor extends DefaultCellEditor {
+public class DropdownButtonEditor extends DefaultCellEditor {
     protected JButton button;
     private String label;
     private boolean isPushed;
-    private DropdownTypePanel dropdownTypePanel; // Replace with your actual panel class
+    private DropdownPanel dropdownPanel; // Replace with your actual panel class
 
     private int editingRow;
 
-    public DropdownTypeButtonEditor(JCheckBox checkBox, DropdownTypePanel dropdownTypePanel) {
+    public DropdownButtonEditor(JCheckBox checkBox, DropdownPanel dropdownPanel) {
         super(checkBox);
-        this.dropdownTypePanel = dropdownTypePanel;
+        this.dropdownPanel = dropdownPanel;
         button = new JButton();
         button.setOpaque(true);
 
@@ -25,6 +25,7 @@ public class DropdownTypeButtonEditor extends DefaultCellEditor {
         button.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
+                // This method will be called when the button is clicked
                 fireEditingStopped();
             }
         });
@@ -46,9 +47,11 @@ public class DropdownTypeButtonEditor extends DefaultCellEditor {
         if (isPushed) {
             // Handle button click action here based on the label
             if ("Edit".equals(label)) {
-                dropdownTypePanel.editDropdownType(editingRow);
+                // Call your panel's editDropdown method with the appropriate row
+                dropdownPanel.editDropdown(editingRow);
             } else if ("Delete".equals(label)) {
-                dropdownTypePanel.deleteDropdownType(editingRow);
+                // Call your panel's deleteDropdown method with the appropriate row
+                dropdownPanel.deleteDropdown(editingRow);
             }
         }
         isPushed = false;
@@ -61,4 +64,3 @@ public class DropdownTypeButtonEditor extends DefaultCellEditor {
         return super.stopCellEditing();
     }
 }
-

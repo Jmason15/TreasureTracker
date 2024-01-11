@@ -25,7 +25,7 @@ public class Transaction {
     private Date date;
 
     @ManyToOne
-    @JoinColumn(name = "accountId", referencedColumnName = "accounId")
+    @JoinColumn(name = "accountId", referencedColumnName = "accountId")
     private Account account;
 
     @ManyToOne

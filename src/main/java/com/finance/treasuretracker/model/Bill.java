@@ -23,11 +23,11 @@ public class Bill {
     private Double alternate;
 
     @ManyToOne
-    @JoinColumn(name = "accountId", referencedColumnName = "accounId")
+    @JoinColumn(name = "accountId", referencedColumnName = "accountId")
     private Account account;
 
     @ManyToOne
-    @JoinColumn(name = "alternateAccount", referencedColumnName = "accounId")
+    @JoinColumn(name = "alternateAccount", referencedColumnName = "accountId")
     private Account alternateAccount;
 
     @ManyToOne
