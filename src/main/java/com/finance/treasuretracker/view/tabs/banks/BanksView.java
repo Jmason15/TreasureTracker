@@ -3,7 +3,7 @@ package com.finance.treasuretracker.view.tabs.banks;
 import com.finance.treasuretracker.controller.BankController;
 import com.finance.treasuretracker.model.Bank;
 import com.finance.treasuretracker.view.tabs.banks.utils.ButtonEditor;
-import com.finance.treasuretracker.view.tabs.banks.utils.ButtonRenderer;
+import com.finance.treasuretracker.view.tabs.utils.ButtonRenderer;
 
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
@@ -130,9 +130,56 @@ public class BanksView extends JPanel {
     }
 
     public void openEditBankForm(Bank bank) {
-        // Similar implementation to openAddBankForm, but populate fields with 'bank' data
-        // On save, call a method like bankController.updateBank(bank)
+        // Create a dialog for editing a bank
+        JDialog dialog = new JDialog();
+        dialog.setLayout(new BorderLayout());
+        dialog.setTitle("Edit Bank");
+
+        // Create a form panel with labels and text fields
+        JPanel formPanel = new JPanel(new GridLayout(0, 2));
+        JLabel nameLabel = new JLabel("Bank Name:");
+        JTextField nameField = new JTextField(20);
+        nameField.setText(bank.getName());  // Pre-populate with bank's current name
+        formPanel.add(nameLabel);
+        formPanel.add(nameField);
+
+        dialog.add(formPanel, BorderLayout.CENTER);
+
+        // Create a panel for the buttons
+        JPanel buttonPanel = new JPanel();
+        JButton saveButton = new JButton("Save");
+        JButton cancelButton = new JButton("Cancel");
+        buttonPanel.add(saveButton);
+        buttonPanel.add(cancelButton);
+
+        dialog.add(buttonPanel, BorderLayout.SOUTH);
+
+        // Save button action
+        saveButton.addActionListener(e -> {
+            String bankName = nameField.getText().trim();
+            if (!bankName.isEmpty()) {
+                bank.setName(bankName);
+                // Call controller to update the bank
+                bankController.updateBank(bank); // Assume this method exists in your controller
+                dialog.dispose();
+
+                // Refresh the table or UI
+                populateTableWithData();
+            } else {
+                JOptionPane.showMessageDialog(dialog, "Bank name cannot be empty.", "Error", JOptionPane.ERROR_MESSAGE);
+            }
+        });
+
+        // Cancel button action
+        cancelButton.addActionListener(e -> dialog.dispose());
+
+        // Set dialog properties
+        dialog.pack();
+        dialog.setLocationRelativeTo(null); // Center on screen
+        dialog.setModal(true); // Block other windows until this dialog is closed
+        dialog.setVisible(true);
     }
+
 
     // Inner classes for button rendering and editing will be added here
 }

@@ -14,6 +14,8 @@ public interface BankServiceInterface{
 
     void delete(Bank bank);
 
+    void updateBank(Bank bank);
+
 //    BankRepository bankRepository;
 //    @Autowired
 //    public BankService(BankRepository bankRepository){

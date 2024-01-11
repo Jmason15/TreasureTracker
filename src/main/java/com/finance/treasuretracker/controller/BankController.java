@@ -34,4 +34,8 @@ public class BankController {
    public void deleteBank(Bank bank) {
        bankService.delete(bank);
    }
+
+   public void updateBank(Bank bank){
+      bankService.updateBank(bank);
+   }
 }

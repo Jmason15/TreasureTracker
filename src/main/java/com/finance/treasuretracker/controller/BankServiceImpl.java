@@ -36,5 +36,10 @@ public class BankServiceImpl implements BankServiceInterface {
     @Override
     public void delete(Bank bank){
         bankRepository.delete(bank);
-    };
+    }
+
+    @Override
+    public void updateBank(Bank bank){
+        bankRepository.save(bank);
+    }
 }

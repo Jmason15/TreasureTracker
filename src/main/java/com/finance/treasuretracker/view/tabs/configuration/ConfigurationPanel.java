@@ -1,12 +1,17 @@
 package com.finance.treasuretracker.view.tabs.configuration;
 
+import com.finance.treasuretracker.view.tabs.utils.ButtonRenderer;
+import com.finance.treasuretracker.view.tabs.configuration.DropdownPanel;
+import com.finance.treasuretracker.view.tabs.configuration.DropdownTypePanel;
+
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.ActionListener;
 
 public class ConfigurationPanel extends JPanel {
     private CardLayout cardLayout;
     private JPanel cards;
+    private DropdownPanel dropdownPanel;
+    private DropdownTypePanel dropdownTypePanel;
 
     public ConfigurationPanel() {
         setLayout(new BorderLayout());
@@ -27,7 +32,7 @@ public class ConfigurationPanel extends JPanel {
 
         // Add action listeners
         dropdownButton.addActionListener(e -> cardLayout.show(cards, "Dropdown"));
-        dropdownTypeButton.addActionListener(e -> cardLayout.show(cards, "Dropdown Type"));
+        dropdownTypeButton.addActionListener(e -> cardLayout.show(cards, "DropdownType"));
 
         sidePanel.add(dropdownButton);
         sidePanel.add(dropdownTypeButton);
@@ -43,13 +48,15 @@ public class ConfigurationPanel extends JPanel {
 
     private void initializeCards() {
         cards = new JPanel(new CardLayout());
-        cardLayout = (CardLayout)(cards.getLayout());
+        cardLayout = (CardLayout) (cards.getLayout());
 
-        JPanel dropdownPanel = new JPanel(); // Add components for account management
-        JPanel dropdownTypePanel = new JPanel();    // Add components for bank management
+        // Create DropdownPanel and DropdownTypePanel
+        dropdownPanel = new DropdownPanel();
+        dropdownTypePanel = new DropdownTypePanel();
 
-        cards.add(dropdownPanel, "Account");
-        cards.add(dropdownTypePanel, "Bank");
+        // Add DropdownPanel and DropdownTypePanel to the cards
+        cards.add(dropdownPanel, "Dropdown");
+        cards.add(dropdownTypePanel, "DropdownType");
 
         add(cards, BorderLayout.CENTER);
     }

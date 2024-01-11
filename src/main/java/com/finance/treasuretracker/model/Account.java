@@ -12,7 +12,7 @@ import lombok.NoArgsConstructor;
 public class Account {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Integer accounId;
+    private Integer accountId;
 
     @ManyToOne
     @JoinColumn(name = "bankid", referencedColumnName = "bankId")
