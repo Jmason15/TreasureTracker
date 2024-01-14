@@ -33,19 +33,16 @@ public class DropdownButtonEditor extends DefaultCellEditor {
 
     @Override
     public Component getTableCellEditorComponent(JTable table, Object value, boolean isSelected, int row, int column) {
-        if (value == null) return null;
-
-        label = value.toString();
+        editingRow = row; // Set the row being edited
+        label = (value == null) ? "" : value.toString();
         button.setText(label);
         isPushed = true;
-        editingRow = row;
         return button;
     }
 
     @Override
     public Object getCellEditorValue() {
         if (isPushed) {
-            // Handle button click action here based on the label
             if ("Edit".equals(label)) {
                 // Call your panel's editDropdown method with the appropriate row
                 dropdownPanel.editDropdown(editingRow);

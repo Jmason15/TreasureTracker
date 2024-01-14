@@ -1,5 +1,6 @@
 package com.finance.treasuretracker.view.tabs.menu;
 
+import com.finance.treasuretracker.controller.DropdownController;
 import com.finance.treasuretracker.controller.DropdownTypeController;
 
 import javax.swing.*;
@@ -8,9 +9,11 @@ import java.awt.event.ActionListener;
 
 public class Menu {
     static DropdownTypeController dropdownTypeController;
-    public void setupMenu(JFrame frame, DropdownTypeController dropdownTypeController) {
+    static DropdownController dropdownController;
+    public void setupMenu(JFrame frame, DropdownTypeController dropdownTypeController, DropdownController dropdownController) {
         // Create the menu bar
         this.dropdownTypeController = dropdownTypeController;
+        this.dropdownController = dropdownController;
         JMenuBar menuBar = new JMenuBar();
 
         // Build the first menu
@@ -23,7 +26,7 @@ public class Menu {
             @Override
             public void actionPerformed(ActionEvent e) {
                 // Open a dialog or frame with the DropdownPanel
-                showDropdownsDialog();
+                showDropdownsDialog(dropdownTypeController, dropdownController);
             }
         });
         menu.add(menuItemDropdowns);
@@ -43,12 +46,12 @@ public class Menu {
     }
 
     // Method to show a dialog or frame with the DropdownPanel
-    private static void showDropdownsDialog() {
+    private static void showDropdownsDialog(DropdownTypeController dropdownTypeController, DropdownController dropdownController) {
         JDialog dialog = new JDialog();
         dialog.setTitle("Edit Dropdowns");
 
-        // Create and add the DropdownPanel to the dialog
-        DropdownPanel dropdownPanel = new DropdownPanel();
+        // Create and add the DropdownPanel to the dialog, passing the required controller
+        DropdownPanel dropdownPanel = new DropdownPanel(dropdownTypeController, dropdownController);
         dialog.add(dropdownPanel);
 
         dialog.pack();

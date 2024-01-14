@@ -21,7 +21,7 @@ public class MainView {
         frame.setSize(2000, 1600);
 
         com.finance.treasuretracker.view.tabs.menu.Menu menu = new Menu();
-        menu.setupMenu(frame, dropdownTypeController);
+        menu.setupMenu(frame, dropdownTypeController, dropdownController);
 
         JTabbedPane tabbedPane = new JTabbedPane();
         tabbedPane.addTab("Summary", new SummaryPanel());
