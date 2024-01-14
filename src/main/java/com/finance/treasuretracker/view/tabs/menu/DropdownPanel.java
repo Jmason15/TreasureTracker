@@ -46,7 +46,16 @@ public class DropdownPanel extends JPanel {
         // Create the table with the table model
         table = new JTable(tableModel);
         table.setDefaultRenderer(JButton.class, new ButtonRenderer());
-        table.setDefaultEditor(JButton.class, new DropdownButtonEditor(new JCheckBox(), this));
+
+// Pass the 'table' as an argument when creating the editor
+        for (int row = 0; row < table.getRowCount(); row++) {
+            for (int column = 0; column < table.getColumnCount(); column++) {
+                if (column >= 3) { // Assuming columns with buttons are 3 and onward
+                    table.setDefaultEditor(JButton.class, new DropdownButtonEditor(new JCheckBox(), this, table));
+                }
+            }
+        }
+        table.setDefaultEditor(JButton.class, new DropdownButtonEditor(new JCheckBox(), this, table));
 
         JScrollPane scrollPane = new JScrollPane(table);
         add(scrollPane, BorderLayout.CENTER);
@@ -81,7 +90,58 @@ public class DropdownPanel extends JPanel {
         Dropdown dropdownToEdit = dropdownController.getDropdownById(dropdownId);
         if (dropdownToEdit != null) {
             // Open a dialog to edit this Dropdown (similar to your addDropdown method but pre-fill the fields)
-            // After editing, refresh the table data
+            JDialog dialog = new JDialog();
+            dialog.setLayout(new BorderLayout());
+            dialog.setTitle("Edit Dropdown");
+
+            JPanel formPanel = new JPanel(new GridLayout(0, 2));
+            formPanel.add(new JLabel("Display:"));
+            JTextField displayField = new JTextField(20);
+            displayField.setText(dropdownToEdit.getDisplay()); // Pre-fill with existing value
+            formPanel.add(displayField);
+
+            // Initialize JComboBox here
+            List<DropdownType> dropdownTypes = dropdownTypeController.getAllDropdownTypes();
+            JComboBox<DropdownType> localDropdownTypeComboBox = new JComboBox<>();
+            for (DropdownType type : dropdownTypes) {
+                localDropdownTypeComboBox.addItem(type);
+            }
+            localDropdownTypeComboBox.setRenderer(new DropdownTypeRenderer());
+            formPanel.add(new JLabel("Dropdown Type:"));
+            localDropdownTypeComboBox.setSelectedItem(dropdownToEdit.getDropdownType()); // Pre-select existing value
+            formPanel.add(localDropdownTypeComboBox);
+
+            // Similar for other fields...
+
+            dialog.add(formPanel, BorderLayout.CENTER);
+
+            JPanel buttonPanel = new JPanel();
+            JButton saveButton = new JButton("Save");
+            saveButton.addActionListener(new ActionListener() {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    // Retrieve values from form fields
+                    String displayValue = displayField.getText();
+                    DropdownType selectedType = (DropdownType) localDropdownTypeComboBox.getSelectedItem();
+
+                    // Update Dropdown object
+                    dropdownToEdit.setDisplay(displayValue);
+                    dropdownToEdit.setDropdownType(selectedType);
+                    dropdownController.saveDropdown(dropdownToEdit); // Update the Dropdown
+
+                    // Close the dialog after saving
+                    dialog.dispose();
+
+                    // Refresh the table data
+                    populateTableWithData();
+                }
+            });
+            buttonPanel.add(saveButton);
+            dialog.add(buttonPanel, BorderLayout.SOUTH);
+
+            dialog.pack();
+            dialog.setLocationRelativeTo(null); // Center on screen
+            dialog.setVisible(true);
         }
     }
 
@@ -156,13 +216,6 @@ public class DropdownPanel extends JPanel {
     }
 
     // Method to edit a Dropdown entry
-    public void editDropdown(int row) {
-        // Implement the edit functionality here
-    }
 
-    // Method to delete a Dropdown entry
-    public void deleteDropdown(int row) {
-        // Implement the delete functionality here
-    }
 }
 

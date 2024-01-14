@@ -1,6 +1,8 @@
 package com.finance.treasuretracker.view.tabs.menu.utils;
 
+import com.finance.treasuretracker.model.Dropdown;
 import com.finance.treasuretracker.view.tabs.menu.DropdownPanel;
+import org.hibernate.mapping.Table;
 
 import javax.swing.*;
 import java.awt.*;
@@ -11,13 +13,15 @@ public class DropdownButtonEditor extends DefaultCellEditor {
     protected JButton button;
     private String label;
     private boolean isPushed;
+    private JTable table;
     private DropdownPanel dropdownPanel; // Replace with your actual panel class
 
     private int editingRow;
 
-    public DropdownButtonEditor(JCheckBox checkBox, DropdownPanel dropdownPanel) {
+    public DropdownButtonEditor(JCheckBox checkBox, DropdownPanel dropdownPanel, JTable table) {
         super(checkBox);
         this.dropdownPanel = dropdownPanel;
+        this.table = table; // Store the table as a class member
         button = new JButton();
         button.setOpaque(true);
 
@@ -44,11 +48,13 @@ public class DropdownButtonEditor extends DefaultCellEditor {
     public Object getCellEditorValue() {
         if (isPushed) {
             if ("Edit".equals(label)) {
-                // Call your panel's editDropdown method with the appropriate row
-                dropdownPanel.editDropdown(editingRow);
+                // Call your panel's editDropdown method with the appropriate row and the dropdownId
+                Long dropdownId = (Long) table.getValueAt(editingRow, 0); // Assuming the ID is in the first column
+                dropdownPanel.editDropdown(dropdownId);
             } else if ("Delete".equals(label)) {
-                // Call your panel's deleteDropdown method with the appropriate row
-                dropdownPanel.deleteDropdown(editingRow);
+                // Call your panel's deleteDropdown method with the appropriate row and the dropdownId
+                Long dropdownId = (Long) table.getValueAt(editingRow, 0); // Assuming the ID is in the first column
+                dropdownPanel.deleteDropdown(dropdownId);
             }
         }
         isPushed = false;

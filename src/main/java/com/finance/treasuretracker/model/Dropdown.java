@@ -12,7 +12,7 @@ import lombok.NoArgsConstructor;
 public class Dropdown {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Integer dropdownId;
+    private Long dropdownId;
 
     private String display;
     private Integer value;
