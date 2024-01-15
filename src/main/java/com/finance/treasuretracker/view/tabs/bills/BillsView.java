@@ -285,7 +285,7 @@ public class BillsView extends JPanel {
                 Object billIdObj = table.getModel().getValueAt(modelRow, 0); // Retrieve the ID object
 
                 Long billId;
-                if (billIdObj instanceof Integer) {
+                if (billIdObj instanceof Long) {
                     billId = (Long) billIdObj; // Cast to Integer
                 } else {
                     throw new IllegalStateException("Bill ID is not of a recognized type");
