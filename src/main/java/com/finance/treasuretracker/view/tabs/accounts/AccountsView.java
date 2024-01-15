@@ -5,11 +5,14 @@ import com.finance.treasuretracker.controller.DropdownController;
 import com.finance.treasuretracker.controller.DropdownTypeController;
 import com.finance.treasuretracker.model.Bank;
 import com.finance.treasuretracker.model.Dropdown;
+import com.finance.treasuretracker.view.tabs.bills.utils.BankNameCellRenderer;
+import com.finance.treasuretracker.view.tabs.bills.utils.DropdownNameCellRenerer;
 import com.finance.treasuretracker.view.tabs.utils.ButtonRenderer;
 
 import com.finance.treasuretracker.controller.AccountController;
 import com.finance.treasuretracker.model.Account;
 import com.finance.treasuretracker.view.tabs.accounts.utils.AccountButtonEditor;
+import com.finance.treasuretracker.view.tabs.utils.ComboBoxItem;
 
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
@@ -92,19 +95,21 @@ public class AccountsView extends JPanel {
         JPanel formPanel = new JPanel(new GridLayout(0, 2));
         JLabel bankLabel = new JLabel("Bank:");
         // Populate a JComboBox with available banks (you need to fetch the list of banks from the controller)
-        JComboBox<String> bankComboBox = new JComboBox<>();
+        JComboBox<ComboBoxItem<Bank>> bankComboBox = new JComboBox<>();
+        bankComboBox.setRenderer(new BankNameCellRenderer());
         // Fetch the list of banks from the controller and add them to the combo box
         List<Bank> banks = bankController.getAllBanks();
         for (Bank bank : banks) {
-            bankComboBox.addItem(bank.getName());
+            bankComboBox.addItem(new ComboBoxItem<>(bank, bank.getName()));
         }
         JLabel typeLabel = new JLabel("Type:");
         // Populate a JComboBox with available types (you need to fetch the list of types from the controller)
-        JComboBox<String> typeComboBox = new JComboBox<>();
+        JComboBox<ComboBoxItem<Dropdown>> typeComboBox = new JComboBox<>();
+        typeComboBox.setRenderer(new DropdownNameCellRenerer());
         // Fetch the list of types from the controller and add them to the combo box
         List<Dropdown> types = dropdownController.getAllDropdowns();
         for (Dropdown type : types) {
-            typeComboBox.addItem(type.getDisplay());
+            typeComboBox.addItem(new ComboBoxItem<>(type, type.getDisplay()));
         }
         JCheckBox creditCheckBox = new JCheckBox("Credit");
 
@@ -127,15 +132,14 @@ public class AccountsView extends JPanel {
 
         // Save button action
         saveButton.addActionListener(e -> {
-            Long selectedBankId = (Long) bankComboBox.getSelectedItem();
-            Long selectedTypeId = (Long) typeComboBox.getSelectedItem();
-            Boolean isCredit = creditCheckBox.isSelected();
+            ComboBoxItem<Bank> selectedBankItem = (ComboBoxItem<Bank>) bankComboBox.getSelectedItem();
+            ComboBoxItem<Dropdown> selectedTypeItem = (ComboBoxItem<Dropdown>) typeComboBox.getSelectedItem();
 
-            // Fetch the selected bank and type based on their names from the controller
-            Bank selectedBank = bankController.getById(selectedBankId);
-            Dropdown selectedType = dropdownController.getDropdownById(selectedTypeId);
+            if (selectedBankItem != null && selectedTypeItem != null) {
+                Bank selectedBank = selectedBankItem.getItem();
+                Dropdown selectedType = selectedTypeItem.getItem();
+                Boolean isCredit = creditCheckBox.isSelected();
 
-            if (selectedBank != null && selectedType != null) {
                 toSaveOrUpdate.setBank(selectedBank);
                 toSaveOrUpdate.setType(selectedType);
                 toSaveOrUpdate.setCredit(isCredit);

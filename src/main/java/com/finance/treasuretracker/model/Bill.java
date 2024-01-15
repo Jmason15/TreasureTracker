@@ -15,7 +15,7 @@ import lombok.NoArgsConstructor;
 public class Bill {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Integer billId;
+    private Long billId;
 
     private String name;
     private Integer dueDay;

@@ -2,10 +2,7 @@ package com.finance.treasuretracker;
 import javax.swing.*;
 
 import com.finance.treasuretracker.controller.*;
-import com.finance.treasuretracker.model.repository.AccountRepository;
-import com.finance.treasuretracker.model.repository.BankRepository;
-import com.finance.treasuretracker.model.repository.DropdownRepository;
-import com.finance.treasuretracker.model.repository.DropdownTypeRepository;
+import com.finance.treasuretracker.model.repository.*;
 import com.finance.treasuretracker.view.MainView;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.builder.SpringApplicationBuilder;
@@ -39,12 +36,16 @@ public class TreasureTrackerApplication {
 		DropdownTypeServiceInterface dropdownTypeService = new DropdownTypeServiceImpl(dropdownTypeRepository);
 		DropdownTypeController dropdownTypeController = new DropdownTypeController(dropdownTypeService);
 
+		BillRepository billRepository = ctx.getBean(BillRepository.class);
+		BillServiceInterface billService = new BillServiceImpl(billRepository);
+		BillController billController = new BillController(billService);
+
 
 
 		// Run the Swing UI on the Event Dispatch Thread
 		SwingUtilities.invokeLater(() -> {
 			// Create and display your Swing UI here, passing the bankController
-			MainView.createAndShowGUI(accountController, bankController, dropdownController, dropdownTypeController);
+			MainView.createAndShowGUI(accountController, bankController, dropdownController, dropdownTypeController, billController);
 		});
 	}
 }

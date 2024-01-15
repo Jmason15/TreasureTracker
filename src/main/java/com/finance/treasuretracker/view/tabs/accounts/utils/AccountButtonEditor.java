@@ -40,21 +40,39 @@ public class AccountButtonEditor extends DefaultCellEditor {
             int row = table.convertRowIndexToModel(table.getEditingRow());
             Object accountIdObj = table.getModel().getValueAt(row, 0); // Retrieve the ID object
 
-            Long accountId;
-            if (accountIdObj instanceof Integer) {
-                accountId = (Long) accountIdObj; // Cast to Integer
-            } else {
-                throw new IllegalStateException("Account ID is not of a recognized type");
-            }
+            Long accountId = getaLong(accountIdObj);
 
-            if ("Edit".equals(label)) {
-                Account account = accountController.getAccountById(accountId);
-                accountsView.openAddAccountForm(account);
-            } else if ("Delete".equals(label)) {
-                accountController.deleteAccount(accountId);
+            if (accountId != null) {
+                if ("Edit".equals(label)) {
+                    Account account = accountController.getAccountById(accountId);
+                    accountsView.openAddAccountForm(account);
+                } else if ("Delete".equals(label)) {
+                    accountController.deleteAccount(accountId);
+                }
             }
         }
         isPushed = false;
         return label;
+    }
+
+    private static Long getaLong(Object accountIdObj) {
+        Long accountId = null;
+
+        if (accountIdObj != null) {
+            if (accountIdObj instanceof Long) {
+                accountId = (Long) accountIdObj;
+            } else if (accountIdObj instanceof Integer) {
+                accountId = ((Integer) accountIdObj).longValue();
+            } else if (accountIdObj instanceof String) {
+                try {
+                    accountId = Long.parseLong((String) accountIdObj);
+                } catch (NumberFormatException e) {
+                    throw new IllegalStateException("Invalid Account ID format");
+                }
+            }
+        } else {
+            throw new IllegalStateException("Account ID is null");
+        }
+        return accountId;
     }
 }
