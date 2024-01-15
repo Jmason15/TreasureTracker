@@ -8,6 +8,8 @@ public interface DropdownServiceInterface {
 
     List<Dropdown> getAllDropdowns();
 
+    List<Dropdown> getAllDropdownsByType(Long typeId);
+
     Dropdown getDropdownById(Long id);
 
     void saveDropdown(Dropdown dropdown);

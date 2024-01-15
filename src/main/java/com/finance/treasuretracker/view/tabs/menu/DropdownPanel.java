@@ -33,13 +33,14 @@ public class DropdownPanel extends JPanel {
     public DropdownPanel(DropdownTypeController dropdownTypeController, DropdownController dropdownController) {
         this.dropdownController = dropdownController;
         this.dropdownTypeController = dropdownTypeController;
+        setPreferredSize(new Dimension(800, 600));
         setLayout(new BorderLayout());
 
         // Create the table model
-        tableModel = new DefaultTableModel(new Object[]{"ID", "Display", "Value", "Edit", "Delete"}, 0) {
+        tableModel = new DefaultTableModel(new Object[]{"ID", "Display", "Value", "Type", "Edit", "Delete"}, 0) {
             @Override
             public Class<?> getColumnClass(int column) {
-                return (column >= 3) ? JButton.class : Object.class;
+                return (column >= 4) ? JButton.class : Object.class;
             }
         };
 
@@ -50,7 +51,7 @@ public class DropdownPanel extends JPanel {
 // Pass the 'table' as an argument when creating the editor
         for (int row = 0; row < table.getRowCount(); row++) {
             for (int column = 0; column < table.getColumnCount(); column++) {
-                if (column >= 3) { // Assuming columns with buttons are 3 and onward
+                if (column >= 4) { // Assuming columns with buttons are 3 and onward
                     table.setDefaultEditor(JButton.class, new DropdownButtonEditor(new JCheckBox(), this, table));
                 }
             }
@@ -78,6 +79,7 @@ public class DropdownPanel extends JPanel {
                     dropdown.getDropdownId(),
                     dropdown.getDisplay(),
                     dropdown.getValue(), // Assuming Dropdown has a 'value' field
+                    dropdown.getDropdownType().getTypeName(),
                     "Edit",
                     "Delete"
             };
@@ -99,6 +101,12 @@ public class DropdownPanel extends JPanel {
             JTextField displayField = new JTextField(20);
             displayField.setText(dropdownToEdit.getDisplay()); // Pre-fill with existing value
             formPanel.add(displayField);
+
+            // Value field
+            formPanel.add(new JLabel("Value:"));
+            JTextField valueField = new JTextField(20);
+            valueField.setText(dropdownToEdit.getValue() != null ? dropdownToEdit.getValue().toString() : ""); // Check for null here
+            formPanel.add(valueField);
 
             // Initialize JComboBox here
             List<DropdownType> dropdownTypes = dropdownTypeController.getAllDropdownTypes();
@@ -122,17 +130,17 @@ public class DropdownPanel extends JPanel {
                 public void actionPerformed(ActionEvent e) {
                     // Retrieve values from form fields
                     String displayValue = displayField.getText();
+                    String value = valueField.getText(); // Get the updated value from the text field
                     DropdownType selectedType = (DropdownType) localDropdownTypeComboBox.getSelectedItem();
 
-                    // Update Dropdown object
+                    // Update Dropdown object with new values
                     dropdownToEdit.setDisplay(displayValue);
+                    dropdownToEdit.setValue(value); // Update the value here
                     dropdownToEdit.setDropdownType(selectedType);
-                    dropdownController.saveDropdown(dropdownToEdit); // Update the Dropdown
 
-                    // Close the dialog after saving
+                    dropdownController.saveDropdown(dropdownToEdit); // Save the updated Dropdown
+
                     dialog.dispose();
-
-                    // Refresh the table data
                     populateTableWithData();
                 }
             });

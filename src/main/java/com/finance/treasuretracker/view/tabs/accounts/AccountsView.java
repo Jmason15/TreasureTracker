@@ -37,11 +37,17 @@ public class AccountsView extends JPanel {
 
     private void initializeUI() {
         // Table model
-        tableModel = new DefaultTableModel(new Object[]{"ID", "Bank", "Type", "Credit", "Edit", "Delete"}, 0);
+        tableModel = new DefaultTableModel(new Object[]{"ID", "Bank", "Type", "Credit", "Display Name", "Edit", "Delete"}, 0);
         JTable table = new JTable(tableModel) {
             @Override
             public Class<?> getColumnClass(int column) {
-                return (column >= 4) ? JButton.class : Object.class;
+                if (column == 2) { // The "Type" column
+                    return Object.class; // Return Object class to display plain text
+                }
+                if (column == 4) { // The "Display Name" column
+                    return Object.class; // Return Object class to display plain text
+                }
+                return (column >= 5) ? JButton.class : Object.class;
             }
         };
 
@@ -74,8 +80,9 @@ public class AccountsView extends JPanel {
             Object[] row = new Object[]{
                     account.getAccountId(),
                     account.getBank().getName(),
-                    account.getType().getValue(),
+                    account.getType().getDisplay(),
                     account.getCredit(),
+                    account.getDisplayName(), // Add the display name here
                     "Edit",
                     "Delete"
             };
@@ -102,21 +109,28 @@ public class AccountsView extends JPanel {
         for (Bank bank : banks) {
             bankComboBox.addItem(new ComboBoxItem<>(bank, bank.getName()));
         }
+
         JLabel typeLabel = new JLabel("Type:");
         // Populate a JComboBox with available types (you need to fetch the list of types from the controller)
         JComboBox<ComboBoxItem<Dropdown>> typeComboBox = new JComboBox<>();
         typeComboBox.setRenderer(new DropdownNameCellRenerer());
         // Fetch the list of types from the controller and add them to the combo box
-        List<Dropdown> types = dropdownController.getAllDropdowns();
+        List<Dropdown> types = dropdownController.getAllDropdownsbyType(1L);
         for (Dropdown type : types) {
             typeComboBox.addItem(new ComboBoxItem<>(type, type.getDisplay()));
         }
+
+        JLabel displayNameLabel = new JLabel("Display Name:");
+        JTextField displayNameField = new JTextField();
+
         JCheckBox creditCheckBox = new JCheckBox("Credit");
 
         formPanel.add(bankLabel);
         formPanel.add(bankComboBox);
         formPanel.add(typeLabel);
         formPanel.add(typeComboBox);
+        formPanel.add(displayNameLabel);
+        formPanel.add(displayNameField);
         formPanel.add(creditCheckBox);
 
         dialog.add(formPanel, BorderLayout.CENTER);
@@ -134,6 +148,7 @@ public class AccountsView extends JPanel {
         saveButton.addActionListener(e -> {
             ComboBoxItem<Bank> selectedBankItem = (ComboBoxItem<Bank>) bankComboBox.getSelectedItem();
             ComboBoxItem<Dropdown> selectedTypeItem = (ComboBoxItem<Dropdown>) typeComboBox.getSelectedItem();
+            String displayName = displayNameField.getText(); // Get the display name input from the user
 
             if (selectedBankItem != null && selectedTypeItem != null) {
                 Bank selectedBank = selectedBankItem.getItem();
@@ -143,6 +158,7 @@ public class AccountsView extends JPanel {
                 toSaveOrUpdate.setBank(selectedBank);
                 toSaveOrUpdate.setType(selectedType);
                 toSaveOrUpdate.setCredit(isCredit);
+                toSaveOrUpdate.setDisplayName(displayName); // Set the display name in the account
 
                 if (account == null) {
                     // If the account is null, it's a new account, so save it
@@ -170,6 +186,7 @@ public class AccountsView extends JPanel {
         dialog.setModal(true); // Block other windows until this dialog is closed
         dialog.setVisible(true);
     }
+
 
     // Implement methods to delete and edit accounts similar to BanksView
 

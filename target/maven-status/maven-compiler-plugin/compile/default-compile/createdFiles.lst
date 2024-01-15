@@ -41,6 +41,7 @@ com/finance/treasuretracker/view/tabs/utils/ComboBoxItem.class
 com/finance/treasuretracker/view/tabs/accounts/utils/AccountButtonEditor.class
 com/finance/treasuretracker/model/Account.class
 com/finance/treasuretracker/view/tabs/transactions/TransactionsPanel.class
+com/finance/treasuretracker/utils/NotFoundException.class
 com/finance/treasuretracker/model/repository/AccountRepository.class
 com/finance/treasuretracker/view/tabs/menu/DropdownPanel$3.class
 com/finance/treasuretracker/view/tabs/bills/BillsView$BillButtonEditor.class

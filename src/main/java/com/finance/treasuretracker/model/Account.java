@@ -24,6 +24,8 @@ public class Account {
 
     private Boolean credit;
 
+    private String displayName;
+
     // Getters and setters
 }
 

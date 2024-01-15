@@ -7,11 +7,13 @@ import com.finance.treasuretracker.view.MainView;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.builder.SpringApplicationBuilder;
 import org.springframework.context.ConfigurableApplicationContext;
-
+import com.formdev.flatlaf.themes.FlatMacLightLaf;
 @SpringBootApplication
 public class TreasureTrackerApplication {
 
 	public static void main(String[] args) {
+		FlatMacLightLaf.setup();
+
 		// Create a Spring application context
 		ConfigurableApplicationContext ctx = new SpringApplicationBuilder(TreasureTrackerApplication.class)
 				.headless(false) // allows the AWT/Swing components to be instantiated
@@ -27,14 +29,16 @@ public class TreasureTrackerApplication {
 		AccountController accountController = new AccountController(accountService);
 
 // Initialize the Dropdown components
-		DropdownRepository dropdownRepository = ctx.getBean(DropdownRepository.class);
-		DropdownServiceInterface dropdownService = new DropdownServiceImpl(dropdownRepository);
-		DropdownController dropdownController = new DropdownController(dropdownService);
+
 
 // Initialize the DropdownType components
 		DropdownTypeRepository dropdownTypeRepository = ctx.getBean(DropdownTypeRepository.class);
 		DropdownTypeServiceInterface dropdownTypeService = new DropdownTypeServiceImpl(dropdownTypeRepository);
 		DropdownTypeController dropdownTypeController = new DropdownTypeController(dropdownTypeService);
+
+		DropdownRepository dropdownRepository = ctx.getBean(DropdownRepository.class);
+		DropdownServiceInterface dropdownService = new DropdownServiceImpl(dropdownRepository, dropdownTypeRepository);
+		DropdownController dropdownController = new DropdownController(dropdownService);
 
 		BillRepository billRepository = ctx.getBean(BillRepository.class);
 		BillServiceInterface billService = new BillServiceImpl(billRepository);

@@ -15,7 +15,8 @@ public class MainView {
     public static void createAndShowGUI(AccountController accountController, BankController bankController, DropdownController dropdownController, DropdownTypeController dropdownTypeController, BillController billController) {
         JFrame frame = new JFrame("Treasure Tracker");
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        frame.setSize(2000, 1600);
+        frame.setMinimumSize(new Dimension(2000, 900));
+        frame.pack();
 
         com.finance.treasuretracker.view.tabs.menu.Menu menu = new Menu();
         menu.setupMenu(frame, dropdownTypeController, dropdownController);

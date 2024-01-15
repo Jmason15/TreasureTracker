@@ -7,6 +7,8 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.Date;
+
 @Entity
 @Data
 @AllArgsConstructor
@@ -18,7 +20,7 @@ public class Bill {
     private Long billId;
 
     private String name;
-    private Integer dueDay;
+    private Date dueDay;
     private Double amount;
     private Double alternate;
 

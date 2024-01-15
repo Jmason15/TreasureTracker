@@ -15,7 +15,7 @@ public class Dropdown {
     private Long dropdownId;
 
     private String display;
-    private Integer value;
+    private String value;
 
     @ManyToOne
     @JoinColumn(name = "dropdownType", referencedColumnName = "dropdownTypeId")

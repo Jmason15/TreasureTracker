@@ -11,10 +11,10 @@ public class AccountButtonEditor extends DefaultCellEditor {
     protected JButton button;
     private String label;
     private boolean isPushed;
-    private AccountController accountController;
-    private AccountsView accountsView; // Assuming this is the name of your view class
+    private final AccountController accountController;
+    private final AccountsView accountsView; // Assuming this is the name of your view class
 
-    private JTable table;
+    private final JTable table;
 
     public AccountButtonEditor(JCheckBox checkBox, AccountController accountController, AccountsView accountsView, JTable table) {
         super(checkBox);
@@ -40,7 +40,23 @@ public class AccountButtonEditor extends DefaultCellEditor {
             int row = table.convertRowIndexToModel(table.getEditingRow());
             Object accountIdObj = table.getModel().getValueAt(row, 0); // Retrieve the ID object
 
-            Long accountId = getaLong(accountIdObj);
+            Long accountId = null;
+
+            if (accountIdObj != null) {
+                if (accountIdObj instanceof Long) {
+                    accountId = (Long) accountIdObj;
+                } else if (accountIdObj instanceof Integer) {
+                    accountId = ((Integer) accountIdObj).longValue();
+                } else if (accountIdObj instanceof String) {
+                    try {
+                        accountId = Long.parseLong((String) accountIdObj);
+                    } catch (NumberFormatException e) {
+                        throw new IllegalStateException("Invalid Account ID format");
+                    }
+                }
+            } else {
+                throw new IllegalStateException("Account ID is null");
+            }
 
             if (accountId != null) {
                 if ("Edit".equals(label)) {
@@ -53,26 +69,5 @@ public class AccountButtonEditor extends DefaultCellEditor {
         }
         isPushed = false;
         return label;
-    }
-
-    private static Long getaLong(Object accountIdObj) {
-        Long accountId = null;
-
-        if (accountIdObj != null) {
-            if (accountIdObj instanceof Long) {
-                accountId = (Long) accountIdObj;
-            } else if (accountIdObj instanceof Integer) {
-                accountId = ((Integer) accountIdObj).longValue();
-            } else if (accountIdObj instanceof String) {
-                try {
-                    accountId = Long.parseLong((String) accountIdObj);
-                } catch (NumberFormatException e) {
-                    throw new IllegalStateException("Invalid Account ID format");
-                }
-            }
-        } else {
-            throw new IllegalStateException("Account ID is null");
-        }
-        return accountId;
     }
 }

@@ -9,16 +9,20 @@ import com.finance.treasuretracker.model.Bill;
 import com.finance.treasuretracker.model.Dropdown;
 import com.finance.treasuretracker.view.tabs.bills.utils.BillButtonEditor;
 import com.finance.treasuretracker.view.tabs.utils.ButtonRenderer;
+import com.finance.treasuretracker.view.tabs.utils.ComboBoxItem;
+import org.jdesktop.swingx.JXDatePicker;
 
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.List;
 
 public class BillsView extends JPanel {
 
     private DefaultTableModel tableModel;
-    private BillController billController;
-    private DropdownController dropdownController;
+    private final BillController billController;
+    private final DropdownController dropdownController;
 
     public BillsView(BillController billController, DropdownController dropdownController) {
         this.billController = billController;
@@ -88,8 +92,10 @@ public class BillsView extends JPanel {
         JPanel formPanel = new JPanel(new GridLayout(0, 2));
         JLabel nameLabel = new JLabel("Name:");
         JTextField nameTextField = new JTextField();
+        JXDatePicker datePicker = new JXDatePicker();
+        datePicker.setFormats(new SimpleDateFormat("dd/MM/yyyy"));
+
         JLabel dueDayLabel = new JLabel("Due Day:");
-        JTextField dueDayTextField = new JTextField();
         JLabel amountLabel = new JLabel("Amount:");
         JTextField amountTextField = new JTextField();
         JLabel alternateLabel = new JLabel("Alternate Amount:");
@@ -97,17 +103,16 @@ public class BillsView extends JPanel {
 
         // Populate a JComboBox with available frequencies (you need to fetch the list of frequencies from the controller)
         JLabel frequencyLabel = new JLabel("Frequency:");
-        JComboBox<String> frequencyComboBox = new JComboBox<>();
+        JComboBox<ComboBoxItem<Dropdown>> frequencyComboBox = new JComboBox<>();
         // Fetch the list of frequencies from the controller and add them to the combo box
-        List<Dropdown> frequencies = dropdownController.getAllDropdowns();
-        for (Dropdown frequency : frequencies) {
-            frequencyComboBox.addItem(frequency.getDisplay());
+        for (Dropdown frequency : dropdownController.getAllDropdownsbyType(2L)) {
+            frequencyComboBox.addItem(new ComboBoxItem<>(frequency, frequency.getDisplay()));
         }
 
         formPanel.add(nameLabel);
         formPanel.add(nameTextField);
         formPanel.add(dueDayLabel);
-        formPanel.add(dueDayTextField);
+        formPanel.add(datePicker);
         formPanel.add(amountLabel);
         formPanel.add(amountTextField);
         formPanel.add(alternateLabel);
@@ -129,17 +134,23 @@ public class BillsView extends JPanel {
         // Save button action
         saveButton.addActionListener(e -> {
             String name = nameTextField.getText();
-            Integer dueDay = Integer.parseInt(dueDayTextField.getText());
-            Double amount = Double.parseDouble(amountTextField.getText());
-            Double alternate = Double.parseDouble(alternateTextField.getText());
-            Long selectedFrequencyId = (Long) frequencyComboBox.getSelectedItem();
+            Date dueDate = datePicker.getDate();
+            Double amount = getaDouble(amountTextField);
+            Double alternate = getaDouble(alternateTextField);
+            ComboBoxItem<Dropdown> selectedDropdown = (ComboBoxItem<Dropdown>)  frequencyComboBox.getSelectedItem();
+            Long selectedFrequencyId = null;
+            Dropdown selectedFrequency = null;
 
-            // Fetch the selected frequency based on its ID from the controller
-            Dropdown selectedFrequency = dropdownController.getDropdownById(selectedFrequencyId);
+            if (selectedDropdown != null && selectedDropdown != null) {
+                selectedFrequencyId = selectedDropdown.getItem().getDropdownId();
+                selectedFrequency = dropdownController.getDropdownById(selectedFrequencyId);
+                // Now you have the ID, you can use it as needed
+                // ...
+            }
 
             if (selectedFrequency != null) {
                 toSaveOrUpdate.setName(name);
-                toSaveOrUpdate.setDueDay(dueDay);
+                toSaveOrUpdate.setDueDay(dueDate);
                 toSaveOrUpdate.setAmount(amount);
                 toSaveOrUpdate.setAlternate(alternate);
                 toSaveOrUpdate.setFrequency(selectedFrequency);
@@ -171,6 +182,22 @@ public class BillsView extends JPanel {
         dialog.setLocationRelativeTo(null); // Center on screen
         dialog.setModal(true); // Block other windows until this dialog is closed
         dialog.setVisible(true);
+    }
+
+    private static Double getaDouble(JTextField alternateTextField) {
+        String alternateText = alternateTextField.getText();
+        Double alternate;
+        if (alternateText != null && !alternateText.trim().isEmpty()) {
+            try {
+                alternate = Double.parseDouble(alternateText);
+            } catch (NumberFormatException e) {
+                alternate = 0.0; // Set to zero if the text is not a valid double
+                // Optionally show an error message or log the exception
+            }
+        } else {
+            alternate = 0.0; // Set to zero if the text field is null or empty
+        }
+        return alternate;
     }
 
 

@@ -22,6 +22,11 @@ public class DropdownController {
         return dropdownService.getAllDropdowns();
     }
 
+    @GetMapping("/byType")
+    public List<Dropdown> getAllDropdownsbyType(Long typeId) {
+        return dropdownService.getAllDropdownsByType(typeId);
+    }
+
     @GetMapping("/{id}")
     public Dropdown getDropdownById(@PathVariable Long id) {
         return dropdownService.getDropdownById(id);
