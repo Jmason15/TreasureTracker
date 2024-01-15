@@ -86,7 +86,7 @@ public class BillsView extends JPanel {
         // Create a dialog
         JDialog dialog = new JDialog();
         dialog.setLayout(new BorderLayout());
-        dialog.setTitle("Add/Edit Bill");
+        dialog.setTitle(bill != null ? "Edit Bill" : "Add Bill");
 
         // Create a form panel with labels and text fields
         JPanel formPanel = new JPanel(new GridLayout(0, 2));
@@ -107,6 +107,22 @@ public class BillsView extends JPanel {
         // Fetch the list of frequencies from the controller and add them to the combo box
         for (Dropdown frequency : dropdownController.getAllDropdownsbyType(2L)) {
             frequencyComboBox.addItem(new ComboBoxItem<>(frequency, frequency.getDisplay()));
+        }
+        // Populate the fields if editing
+        if (bill != null) {
+            nameTextField.setText(bill.getName());
+            datePicker.setDate(bill.getDueDay());
+            amountTextField.setText(bill.getAmount().toString());
+            alternateTextField.setText(bill.getAlternate() != null ? bill.getAlternate().toString() : "");
+
+            // Set the frequency dropdown
+            for (int i = 0; i < frequencyComboBox.getItemCount(); i++) {
+                ComboBoxItem<Dropdown> item = (ComboBoxItem<Dropdown>) frequencyComboBox.getItemAt(i);
+                if (item.getItem().equals(bill.getFrequency())) {
+                    frequencyComboBox.setSelectedIndex(i);
+                    break;
+                }
+            }
         }
 
         formPanel.add(nameLabel);
@@ -141,7 +157,7 @@ public class BillsView extends JPanel {
             Long selectedFrequencyId = null;
             Dropdown selectedFrequency = null;
 
-            if (selectedDropdown != null && selectedDropdown != null) {
+            if (selectedDropdown != null) {
                 selectedFrequencyId = selectedDropdown.getItem().getDropdownId();
                 selectedFrequency = dropdownController.getDropdownById(selectedFrequencyId);
                 // Now you have the ID, you can use it as needed
@@ -156,13 +172,9 @@ public class BillsView extends JPanel {
                 toSaveOrUpdate.setFrequency(selectedFrequency);
 
                 if (bill == null) {
-                    // If the bill is null, it's a new bill, so save it
-                    // You can call a method from your BillController to save the bill
-                    // Example: billController.createBill(toSaveOrUpdate);
+                  billController.createBill(toSaveOrUpdate);
                 } else {
-                    // If the bill is not null, it's an existing bill, so update it
-                    // You can call a method from your BillController to update the bill
-                    // Example: billController.updateBill(bill.getBillId(), toSaveOrUpdate);
+                    billController.updateBill(toSaveOrUpdate);
                 }
 
                 dialog.dispose();
@@ -251,11 +263,16 @@ public class BillsView extends JPanel {
                 int modelRow = table.convertRowIndexToModel(row);
                 Object billIdObj = table.getModel().getValueAt(modelRow, 0); // Retrieve the ID object
 
-                Long billId;
+                Long billId = null;
                 if (billIdObj instanceof Integer) {
-                    billId = (Long) billIdObj; // Cast to Integer
+                    // If it's an Integer, convert to Long
+                    billId = ((Integer) billIdObj).longValue();
+                } else if (billIdObj instanceof Long) {
+                    // If it's already a Long, cast directly
+                    billId = (Long) billIdObj;
                 } else {
-                    throw new IllegalStateException("Bill ID is not of a recognized type");
+                    // Handle other unexpected types, perhaps log a warning or error
+                    System.err.println("Unexpected type for bill ID: " + billIdObj.getClass().getName());
                 }
 
                 // Fetch the bill by ID from your BillController

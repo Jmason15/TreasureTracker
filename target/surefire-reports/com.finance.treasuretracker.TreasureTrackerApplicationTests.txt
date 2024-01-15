@@ -1,4 +1,4 @@
 -------------------------------------------------------------------------------
 Test set: com.finance.treasuretracker.TreasureTrackerApplicationTests
 -------------------------------------------------------------------------------
-Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 2.530 s -- in com.finance.treasuretracker.TreasureTrackerApplicationTests
+Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 2.424 s -- in com.finance.treasuretracker.TreasureTrackerApplicationTests
