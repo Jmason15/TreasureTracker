@@ -1,4 +1,4 @@
-package com.finance.treasuretracker.controller;
+package com.finance.treasuretracker.service;
 
 import com.finance.treasuretracker.model.Bank;
 import org.springframework.stereotype.Service;

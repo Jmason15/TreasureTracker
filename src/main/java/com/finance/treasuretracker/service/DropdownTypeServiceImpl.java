@@ -1,5 +1,6 @@
-package com.finance.treasuretracker.controller;
+package com.finance.treasuretracker.service;
 
+import com.finance.treasuretracker.service.BankRecordServiceInterface;
 import com.finance.treasuretracker.model.DropdownType;
 import com.finance.treasuretracker.model.repository.DropdownTypeRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -8,7 +9,7 @@ import org.springframework.stereotype.Service;
 import java.util.List;
 
 @Service
-public class DropdownTypeServiceImpl implements DropdownTypeServiceInterface {
+public class DropdownTypeServiceImpl implements BankRecordServiceInterface.DropdownTypeServiceInterface {
 
     private final DropdownTypeRepository dropdownTypeRepository;
 

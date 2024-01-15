@@ -1,6 +1,7 @@
 package com.finance.treasuretracker.controller;
 
 
+import com.finance.treasuretracker.service.BillServiceInterface;
 import com.finance.treasuretracker.model.Bill;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -42,6 +43,10 @@ public class BillController {
     @DeleteMapping("/{id}")
     public void deleteBill(@PathVariable Long id) {
         billService.deleteBill(id);
+    }
+
+    public void correctTransactions() {
+        billService.correctTransations();
     }
 }
 

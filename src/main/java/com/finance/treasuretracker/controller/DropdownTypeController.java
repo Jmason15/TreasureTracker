@@ -1,5 +1,6 @@
 package com.finance.treasuretracker.controller;
 
+import com.finance.treasuretracker.service.BankRecordServiceInterface;
 import com.finance.treasuretracker.model.DropdownType;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -10,10 +11,10 @@ import java.util.List;
 @RequestMapping("/dropdowntypes")
 public class DropdownTypeController {
 
-    private final DropdownTypeServiceInterface dropdownTypeService;
+    private final BankRecordServiceInterface.DropdownTypeServiceInterface dropdownTypeService;
 
     @Autowired
-    public DropdownTypeController(DropdownTypeServiceInterface dropdownTypeService) {
+    public DropdownTypeController(BankRecordServiceInterface.DropdownTypeServiceInterface dropdownTypeService) {
         this.dropdownTypeService = dropdownTypeService;
     }
 

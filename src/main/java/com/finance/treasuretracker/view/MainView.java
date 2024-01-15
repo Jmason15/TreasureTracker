@@ -12,7 +12,10 @@ import com.finance.treasuretracker.view.tabs.summary.SummaryPanel;
 import com.finance.treasuretracker.view.tabs.transactions.TransactionsPanel;
 
 public class MainView {
-    public static void createAndShowGUI(AccountController accountController, BankController bankController, DropdownController dropdownController, DropdownTypeController dropdownTypeController, BillController billController) {
+    public static void createAndShowGUI(AccountController accountController, BankController bankController,
+                                        DropdownController dropdownController,
+                                        DropdownTypeController dropdownTypeController, BillController billController,
+                                        TransactionController transactionController, BankRecordController bankRecordController) {
         JFrame frame = new JFrame("Treasure Tracker");
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.setMinimumSize(new Dimension(2000, 900));
@@ -23,7 +26,7 @@ public class MainView {
 
         JTabbedPane tabbedPane = new JTabbedPane();
         tabbedPane.addTab("Summary", new SummaryPanel());
-        tabbedPane.addTab("Transactions", new TransactionsPanel());
+        tabbedPane.addTab("Transactions", new TransactionsPanel(transactionController, bankRecordController, accountController));
         tabbedPane.addTab("Bills", new BillsView(billController, dropdownController));
         tabbedPane.addTab("Banks", new BanksView(bankController)); // Pass the controller here
         tabbedPane.addTab("Accounts", new AccountsView(accountController, bankController, dropdownController, dropdownTypeController));

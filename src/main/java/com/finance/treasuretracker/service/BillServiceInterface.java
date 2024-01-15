@@ -1,4 +1,4 @@
-package com.finance.treasuretracker.controller;
+package com.finance.treasuretracker.service;
 
 import com.finance.treasuretracker.model.Bill;
 
@@ -14,4 +14,7 @@ public interface BillServiceInterface {
     Bill updateBill(Bill bill);
 
     void deleteBill(Long id);
+
+    void correctTransations();
+
 }

@@ -51,11 +51,38 @@ public class BillsView extends JPanel {
         // Scroll pane
         JScrollPane scrollPane = new JScrollPane(table);
         add(scrollPane, BorderLayout.CENTER);
+        JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
 
         // Add button at the top
         JButton addButton = new JButton("Add Bill");
+        addButton.setBackground(new Color(0, 128, 0)); // Green color
+        addButton.setForeground(Color.WHITE); // White text
         addButton.addActionListener(e -> openAddBillForm(null));
-        add(addButton, BorderLayout.NORTH);
+        buttonPanel.add(addButton);
+
+        JButton correctTransactionsButton = new JButton("Correct Transactions");
+        correctTransactionsButton.setBackground(new Color(0, 0, 255)); // Blue color
+        correctTransactionsButton.setForeground(Color.WHITE); // White text
+        correctTransactionsButton.addActionListener(e -> showConfirmationDialog());
+        buttonPanel.add(correctTransactionsButton);
+
+        add(buttonPanel, BorderLayout.NORTH);
+
+        // Scroll pane
+        add(scrollPane, BorderLayout.CENTER);
+    }
+
+    private void showConfirmationDialog() {
+        int result = JOptionPane.showConfirmDialog(this,
+                "Are you sure you want to correct transactions?",
+                "Confirm Transaction Correction",
+                JOptionPane.YES_NO_OPTION,
+                JOptionPane.QUESTION_MESSAGE);
+
+        if (result == JOptionPane.YES_OPTION) {
+            billController.correctTransactions();
+        }
+        // No additional action needed for the NO_OPTION as the dialog will simply close
     }
 
     private void populateTableWithData() {

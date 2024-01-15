@@ -1,4 +1,4 @@
-package com.finance.treasuretracker.controller;
+package com.finance.treasuretracker.service;
 
 import com.finance.treasuretracker.model.Account;
 

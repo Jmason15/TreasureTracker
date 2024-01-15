@@ -1,5 +1,6 @@
-package com.finance.treasuretracker.controller;
+package com.finance.treasuretracker.service;
 
+import com.finance.treasuretracker.service.AccountServiceInterface;
 import com.finance.treasuretracker.model.Account;
 import com.finance.treasuretracker.model.repository.AccountRepository;
 import org.springframework.beans.factory.annotation.Autowired;
