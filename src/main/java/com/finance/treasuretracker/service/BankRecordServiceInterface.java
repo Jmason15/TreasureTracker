@@ -15,6 +15,8 @@ public interface BankRecordServiceInterface {
 
     List<BankRecord> saveAll(List<BankRecord> tosave);
 
+    void save(BankRecord bankRecord);
+
     interface DropdownTypeServiceInterface {
 
         List<DropdownType> getAllDropdownTypes();

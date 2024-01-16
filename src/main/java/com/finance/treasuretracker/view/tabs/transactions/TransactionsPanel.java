@@ -7,16 +7,21 @@ import com.finance.treasuretracker.model.Transaction;
 import com.finance.treasuretracker.model.Bill;
 
 import javax.swing.*;
+import javax.swing.event.TableModelEvent;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableCellRenderer;
+import javax.swing.table.TableColumnModel;
 import java.awt.*;
+import java.util.Date;
 import java.util.List;
 
 public class TransactionsPanel extends JPanel {
     private final JTable transactionsTable;
     private final DefaultTableModel tableModel;
+    private final TransactionController transactionController;
 
-    public TransactionsPanel(TransactionController transactionController, BankRecordController bankRecordController, AccountController accountController) {
+    public TransactionsPanel(TransactionController transactionController1, BankRecordController bankRecordController, AccountController accountController) {
+        this.transactionController = transactionController1;
         setLayout(new BorderLayout());
         add(new BankRecordFormPanel(bankRecordController, accountController), BorderLayout.NORTH);
         List<Transaction> transactions = transactionController.getAllTransactions();
@@ -37,19 +42,21 @@ public class TransactionsPanel extends JPanel {
         };
 
         // Fill the table model with data
-        for (Transaction transaction : transactions) {
+        for (Transaction transaction : transactionController.getAllTransactions()) {
             Bill bill = transaction.getBill();
             Object[] row = new Object[]{
                     transaction.getPaid(),
                     bill.getName(),
                     bill.getAmount(),
-                    transaction.getDate()
+                    transaction.getDate(),
+                    transaction.getTransactionId() // Add Transaction ID
             };
             tableModel.addRow(row);
         }
 
         // Create the table
         transactionsTable = new JTable(tableModel);
+        hideTransactionIdColumn();
 
         // Custom rendering for the checkbox
         transactionsTable.setDefaultRenderer(Boolean.class, new TableCellRenderer() {
@@ -64,11 +71,18 @@ public class TransactionsPanel extends JPanel {
 
         // Add a listener to hide rows when the checkbox is clicked
         transactionsTable.getModel().addTableModelListener(e -> {
-            if (e.getColumn() == 0) {
+            if (e.getType() == TableModelEvent.UPDATE && e.getColumn() == 0) {
                 int row = e.getFirstRow();
                 Boolean paid = (Boolean) transactionsTable.getValueAt(row, 0);
-                if (paid) {
-                    //hide the row (you can remove it from the model or implement a filtering mechanism)
+                if (paid != null) {
+                    // Update and save the transaction
+                    Transaction transaction = getTransactionForRow(row);
+                    if (transaction != null) {
+                        transaction.setPaid(paid);
+                        transactionController.saveTransaction(transaction); // Assuming you have a method to save the transaction
+                    }
+                    // Optionally, refresh the table
+                    refreshTableData(transactionController.getAllTransactions());
                 }
             }
         });
@@ -77,6 +91,26 @@ public class TransactionsPanel extends JPanel {
         add(scrollPane, BorderLayout.CENTER);
 
 
+    }
+
+    private void hideTransactionIdColumn() {
+        TableColumnModel columnModel = transactionsTable.getColumnModel();
+        int transactionIdColumnIndex = 4; // Index of the transaction ID column
+
+        // Check if the column index is valid before removing
+        if (transactionIdColumnIndex < columnModel.getColumnCount()) {
+            columnModel.removeColumn(columnModel.getColumn(transactionIdColumnIndex));
+        } else {
+            // Log or handle the case where the column index is invalid
+            System.err.println("Invalid column index: " + transactionIdColumnIndex);
+        }
+    }
+
+    private Transaction getTransactionForRow(int row) {
+        // Retrieve the transaction ID from the hidden column (assumed to be the last column)
+        Long transactionId = (Long) tableModel.getValueAt(row, tableModel.getColumnCount() - 1);
+        // Fetch and return the corresponding transaction using the ID
+        return transactionController.getTransactionById(transactionId);
     }
 
     // Method to refresh the table data (if needed)

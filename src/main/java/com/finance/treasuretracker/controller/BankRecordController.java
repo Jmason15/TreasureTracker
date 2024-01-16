@@ -50,5 +50,9 @@ public class BankRecordController {
     public List<BankRecord> saveAll(List<BankRecord> tosave) {
         return bankRecordService.saveAll(tosave);
     }
+
+    public void save(BankRecord bankRecord) {
+        bankRecordService.save(bankRecord);
+    }
 }
 

@@ -46,5 +46,12 @@ public class BankRecordServiceImpl implements BankRecordServiceInterface {
     public List<BankRecord> saveAll(List<BankRecord> tosave){
         return bankRecordRepository.saveAll(tosave);
     }
+
+    @Override
+    public void save(BankRecord bankRecord) {
+        bankRecordRepository.save(bankRecord);
+    }
+
+
 }
 
