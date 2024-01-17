@@ -20,13 +20,30 @@ public class TransactionsPanel extends JPanel {
     private final DefaultTableModel tableModel;
     private final TransactionController transactionController;
 
+    private boolean showPaidTransactions = false; // Flag to toggle paid transactions
+
+    private void togglePaidTransactions() {
+        showPaidTransactions = !showPaidTransactions; // Toggle the flag
+        refreshTableData(transactionController.getAllTransactions());
+    }
+
     public TransactionsPanel(TransactionController transactionController1, BankRecordController bankRecordController, AccountController accountController) {
         this.transactionController = transactionController1;
         setLayout(new BorderLayout());
-        add(new BankRecordFormPanel(bankRecordController, accountController), BorderLayout.NORTH);
-        List<Transaction> transactions = transactionController.getAllTransactions();
+        // Panel for the top section
+        JPanel topPanel = new JPanel(new BorderLayout());
+        topPanel.add(new BankRecordFormPanel(bankRecordController, accountController), BorderLayout.CENTER);
+
+        // Toggle switch for showing paid transactions
+        JCheckBox toggleSwitch = new JCheckBox("Show Paid Transactions");
+        toggleSwitch.addActionListener(e -> togglePaidTransactions());
+        topPanel.add(toggleSwitch, BorderLayout.EAST);
+
+        // Add the top panel to the main panel
+        add(topPanel, BorderLayout.NORTH);
+
         // Define column names
-        String[] columnNames = {"Paid", "Bill Name", "Amount", "Date"};
+        String[] columnNames = {"Paid", "Bill Name", "Amount", "Date", "transactionId"};
 
         // Create a table model
         tableModel = new DefaultTableModel(columnNames, 0) {
@@ -90,6 +107,13 @@ public class TransactionsPanel extends JPanel {
         JScrollPane scrollPane = new JScrollPane(transactionsTable);
         add(scrollPane, BorderLayout.CENTER);
 
+        // Initially load with unpaid transactions
+        refreshTableData(transactionController.getAllTransactions());
+
+        // Refresh the UI
+        revalidate();
+        repaint();
+
 
     }
 
@@ -100,6 +124,7 @@ public class TransactionsPanel extends JPanel {
         // Check if the column index is valid before removing
         if (transactionIdColumnIndex < columnModel.getColumnCount()) {
             columnModel.removeColumn(columnModel.getColumn(transactionIdColumnIndex));
+            refreshTableData(transactionController.getAllTransactions());
         } else {
             // Log or handle the case where the column index is invalid
             System.err.println("Invalid column index: " + transactionIdColumnIndex);
@@ -107,27 +132,41 @@ public class TransactionsPanel extends JPanel {
     }
 
     private Transaction getTransactionForRow(int row) {
-        // Retrieve the transaction ID from the hidden column (assumed to be the last column)
-        Long transactionId = (Long) tableModel.getValueAt(row, tableModel.getColumnCount() - 1);
-        // Fetch and return the corresponding transaction using the ID
-        return transactionController.getTransactionById(transactionId);
+        // Retrieve the transaction ID. Assuming it's in the last column of the table model
+        int idColumnName = tableModel.findColumn("transactionId");
+        Object transactionIdObj = tableModel.getValueAt(row, idColumnName);
+
+        if (transactionIdObj != null) {
+            try {
+                Long transactionId = ((Integer) transactionIdObj).longValue();
+                return transactionController.getTransactionById(transactionId);
+            } catch (ClassCastException e) {
+                e.printStackTrace();
+                // Handle the exception (log or throw)
+            }
+        } else {
+            // Handle the case where transactionIdObj is null
+            System.err.println("Transaction ID is null for row: " + row);
+        }
+        return null;
     }
 
     // Method to refresh the table data (if needed)
-    public void refreshTableData(List<Transaction> newTransactions) {
-        // Clear existing data
-        tableModel.setRowCount(0);
+    public void refreshTableData(List<Transaction> transactions) {
+        tableModel.setRowCount(0); // Clear existing data
 
-        // Add new data
-        for (Transaction transaction : newTransactions) {
-            Bill bill = transaction.getBill();
-            Object[] row = {
-                    transaction.getPaid(),
-                    bill.getName(),
-                    bill.getAmount(),
-                    transaction.getDate()
-            };
-            tableModel.addRow(row);
+        for (Transaction transaction : transactions) {
+            if (showPaidTransactions || !transaction.getPaid()) { // Check paid status based on the flag
+                Bill bill = transaction.getBill();
+                Object[] row = {
+                        transaction.getPaid(),
+                        bill.getName(),
+                        bill.getAmount(),
+                        transaction.getDate(),
+                        transaction.getTransactionId(),
+                };
+                tableModel.addRow(row);
+            }
         }
     }
 }
