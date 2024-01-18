@@ -3,8 +3,10 @@ package com.finance.treasuretracker.view.tabs.bills;
 import javax.swing.*;
 import java.awt.*;
 
+import com.finance.treasuretracker.controller.AccountController;
 import com.finance.treasuretracker.controller.BillController;
 import com.finance.treasuretracker.controller.DropdownController;
+import com.finance.treasuretracker.model.Account;
 import com.finance.treasuretracker.model.Bill;
 import com.finance.treasuretracker.model.Dropdown;
 import com.finance.treasuretracker.view.tabs.bills.utils.BillButtonEditor;
@@ -24,9 +26,12 @@ public class BillsView extends JPanel {
     private final BillController billController;
     private final DropdownController dropdownController;
 
-    public BillsView(BillController billController, DropdownController dropdownController) {
+    private final AccountController accountController;
+
+    public BillsView(BillController billController, DropdownController dropdownController, AccountController accountController) {
         this.billController = billController;
         this.dropdownController = dropdownController;
+        this.accountController = accountController;
         setLayout(new BorderLayout());
         initializeUI();
     }
@@ -131,10 +136,20 @@ public class BillsView extends JPanel {
         // Populate a JComboBox with available frequencies (you need to fetch the list of frequencies from the controller)
         JLabel frequencyLabel = new JLabel("Frequency:");
         JComboBox<ComboBoxItem<Dropdown>> frequencyComboBox = new JComboBox<>();
+
+
         // Fetch the list of frequencies from the controller and add them to the combo box
         for (Dropdown frequency : dropdownController.getAllDropdownsbyType(2L)) {
             frequencyComboBox.addItem(new ComboBoxItem<>(frequency, frequency.getDisplay()));
         }
+
+        JLabel accountsLabel = new JLabel("Account:");
+        JComboBox<ComboBoxItem<Account>> accountComboBox = new JComboBox<>();
+        for (Account account : accountController.getAllAccounts()) {
+            accountComboBox.addItem(new ComboBoxItem<>(account, account.getDisplayName()));
+        }
+
+
         // Populate the fields if editing
         if (bill != null) {
             nameTextField.setText(bill.getName());
@@ -144,8 +159,16 @@ public class BillsView extends JPanel {
 
             // Set the frequency dropdown
             for (int i = 0; i < frequencyComboBox.getItemCount(); i++) {
-                ComboBoxItem<Dropdown> item = (ComboBoxItem<Dropdown>) frequencyComboBox.getItemAt(i);
+                ComboBoxItem<Dropdown> item = frequencyComboBox.getItemAt(i);
                 if (item.getItem().equals(bill.getFrequency())) {
+                    frequencyComboBox.setSelectedIndex(i);
+                    break;
+                }
+            }
+
+            for (int i = 0; i < accountComboBox.getItemCount(); i++) {
+                ComboBoxItem<Account> item = accountComboBox.getItemAt(i);
+                if (item.getItem().equals(bill.getAccount())) {
                     frequencyComboBox.setSelectedIndex(i);
                     break;
                 }
@@ -162,6 +185,8 @@ public class BillsView extends JPanel {
         formPanel.add(alternateTextField);
         formPanel.add(frequencyLabel);
         formPanel.add(frequencyComboBox);
+        formPanel.add(accountsLabel);
+        formPanel.add(accountComboBox);
 
         dialog.add(formPanel, BorderLayout.CENTER);
 
@@ -181,12 +206,22 @@ public class BillsView extends JPanel {
             Double amount = getaDouble(amountTextField);
             Double alternate = getaDouble(alternateTextField);
             ComboBoxItem<Dropdown> selectedDropdown = (ComboBoxItem<Dropdown>)  frequencyComboBox.getSelectedItem();
+            ComboBoxItem<Account> accountDropdown = (ComboBoxItem<Account>)  accountComboBox.getSelectedItem();
             Long selectedFrequencyId = null;
             Dropdown selectedFrequency = null;
+
+            Integer selectedAccountId = null;
+            Account selectedAccount = null;
 
             if (selectedDropdown != null) {
                 selectedFrequencyId = selectedDropdown.getItem().getDropdownId();
                 selectedFrequency = dropdownController.getDropdownById(selectedFrequencyId);
+                // Now you have the ID, you can use it as needed
+                // ...
+            }
+            if (accountDropdown != null) {
+                selectedAccountId = accountDropdown.getItem().getAccountId();
+                selectedAccount = accountController.getAccountById(selectedAccountId);
                 // Now you have the ID, you can use it as needed
                 // ...
             }
@@ -197,6 +232,7 @@ public class BillsView extends JPanel {
                 toSaveOrUpdate.setAmount(amount);
                 toSaveOrUpdate.setAlternate(alternate);
                 toSaveOrUpdate.setFrequency(selectedFrequency);
+                toSaveOrUpdate.setAccount(selectedAccount);
 
                 if (bill == null) {
                   billController.createBill(toSaveOrUpdate);

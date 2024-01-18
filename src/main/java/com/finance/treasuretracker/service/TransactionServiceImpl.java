@@ -1,6 +1,6 @@
 package com.finance.treasuretracker.service;
 
-import com.finance.treasuretracker.service.TransactionServiceInterface;
+import com.finance.treasuretracker.model.dto.TransactionGridInterface;
 import com.finance.treasuretracker.model.Transaction;
 import com.finance.treasuretracker.model.repository.TransactionRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -40,5 +40,10 @@ public class TransactionServiceImpl implements TransactionServiceInterface {
     @Override
     public void deleteTransaction(Long id) {
         transactionRepository.deleteById(id);
+    }
+
+    @Override
+    public List<TransactionGridInterface> getAllTransactionsForGrid() {
+        return transactionRepository.getAllTransactionsForGrid();
     }
 }

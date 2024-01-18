@@ -4,5 +4,5 @@ import com.finance.treasuretracker.model.Account;
 import com.finance.treasuretracker.model.Bank;
 import org.springframework.data.jpa.repository.JpaRepository;
 
-public interface AccountRepository extends JpaRepository<Account, Long> {
+public interface AccountRepository extends JpaRepository<Account, Integer> {
 }

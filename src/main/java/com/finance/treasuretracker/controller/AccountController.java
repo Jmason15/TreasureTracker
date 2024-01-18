@@ -21,7 +21,7 @@ public class AccountController {
         return accountService.getAllAccounts();
     }
 
-    public Account getAccountById(@PathVariable Long id) {
+    public Account getAccountById(@PathVariable Integer id) {
         return accountService.getAccountById(id);
     }
 
@@ -33,7 +33,7 @@ public class AccountController {
         accountService.updateAccount(account);
     }
 
-    public void deleteAccount(@PathVariable Long id) {
+    public void deleteAccount(@PathVariable Integer id) {
         accountService.deleteAccount(id);
     }
 }

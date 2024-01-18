@@ -27,7 +27,7 @@ public class MainView {
         JTabbedPane tabbedPane = new JTabbedPane();
         tabbedPane.addTab("Summary", new SummaryPanel());
         tabbedPane.addTab("Transactions", new TransactionsPanel(transactionController, bankRecordController, accountController));
-        tabbedPane.addTab("Bills", new BillsView(billController, dropdownController));
+        tabbedPane.addTab("Bills", new BillsView(billController, dropdownController, accountController));
         tabbedPane.addTab("Banks", new BanksView(bankController)); // Pass the controller here
         tabbedPane.addTab("Accounts", new AccountsView(accountController, bankController, dropdownController, dropdownTypeController));
         frame.add(tabbedPane);

@@ -4,7 +4,7 @@ import com.finance.treasuretracker.controller.AccountController;
 import com.finance.treasuretracker.controller.BankRecordController;
 import com.finance.treasuretracker.controller.TransactionController;
 import com.finance.treasuretracker.model.Transaction;
-import com.finance.treasuretracker.model.Bill;
+import com.finance.treasuretracker.model.dto.TransactionGridInterface;
 
 import javax.swing.*;
 import javax.swing.event.TableModelEvent;
@@ -12,7 +12,6 @@ import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumnModel;
 import java.awt.*;
-import java.util.Date;
 import java.util.List;
 
 public class TransactionsPanel extends JPanel {
@@ -24,7 +23,7 @@ public class TransactionsPanel extends JPanel {
 
     private void togglePaidTransactions() {
         showPaidTransactions = !showPaidTransactions; // Toggle the flag
-        refreshTableData(transactionController.getAllTransactions());
+        refreshTableData(transactionController.getAllTransactionsForGrid());
     }
 
     public TransactionsPanel(TransactionController transactionController1, BankRecordController bankRecordController, AccountController accountController) {
@@ -43,7 +42,7 @@ public class TransactionsPanel extends JPanel {
         add(topPanel, BorderLayout.NORTH);
 
         // Define column names
-        String[] columnNames = {"Paid", "Bill Name", "Amount", "Date", "transactionId"};
+        String[] columnNames = {"Paid", "Bill Name", "Amount", "Date", "account", "USAA Balance", "transactionId"};
 
         // Create a table model
         tableModel = new DefaultTableModel(columnNames, 0) {
@@ -59,17 +58,7 @@ public class TransactionsPanel extends JPanel {
         };
 
         // Fill the table model with data
-        for (Transaction transaction : transactionController.getAllTransactions()) {
-            Bill bill = transaction.getBill();
-            Object[] row = new Object[]{
-                    transaction.getPaid(),
-                    bill.getName(),
-                    bill.getAmount(),
-                    transaction.getDate(),
-                    transaction.getTransactionId() // Add Transaction ID
-            };
-            tableModel.addRow(row);
-        }
+        refreshTableData(transactionController.getAllTransactionsForGrid());
 
         // Create the table
         transactionsTable = new JTable(tableModel);
@@ -99,7 +88,7 @@ public class TransactionsPanel extends JPanel {
                         transactionController.saveTransaction(transaction); // Assuming you have a method to save the transaction
                     }
                     // Optionally, refresh the table
-                    refreshTableData(transactionController.getAllTransactions());
+                    refreshTableData(transactionController.getAllTransactionsForGrid());
                 }
             }
         });
@@ -108,7 +97,7 @@ public class TransactionsPanel extends JPanel {
         add(scrollPane, BorderLayout.CENTER);
 
         // Initially load with unpaid transactions
-        refreshTableData(transactionController.getAllTransactions());
+        refreshTableData(transactionController.getAllTransactionsForGrid());
 
         // Refresh the UI
         revalidate();
@@ -119,16 +108,13 @@ public class TransactionsPanel extends JPanel {
 
     private void hideTransactionIdColumn() {
         TableColumnModel columnModel = transactionsTable.getColumnModel();
-        int transactionIdColumnIndex = 4; // Index of the transaction ID column
+        int transactionIdColumnIndex = tableModel.findColumn("transactionId");
+        // Index of the transaction ID column
 
         // Check if the column index is valid before removing
-        if (transactionIdColumnIndex < columnModel.getColumnCount()) {
-            columnModel.removeColumn(columnModel.getColumn(transactionIdColumnIndex));
-            refreshTableData(transactionController.getAllTransactions());
-        } else {
-            // Log or handle the case where the column index is invalid
-            System.err.println("Invalid column index: " + transactionIdColumnIndex);
-        }
+        columnModel.removeColumn(columnModel.getColumn(transactionIdColumnIndex));
+        refreshTableData(transactionController.getAllTransactionsForGrid());
+
     }
 
     private Transaction getTransactionForRow(int row) {
@@ -152,17 +138,17 @@ public class TransactionsPanel extends JPanel {
     }
 
     // Method to refresh the table data (if needed)
-    public void refreshTableData(List<Transaction> transactions) {
+    public void refreshTableData(List<TransactionGridInterface> transactions) {
         tableModel.setRowCount(0); // Clear existing data
-
-        for (Transaction transaction : transactions) {
+        for (TransactionGridInterface transaction : transactions) {
             if (showPaidTransactions || !transaction.getPaid()) { // Check paid status based on the flag
-                Bill bill = transaction.getBill();
                 Object[] row = {
                         transaction.getPaid(),
-                        bill.getName(),
-                        bill.getAmount(),
-                        transaction.getDate(),
+                        transaction.getBillName(),
+                        transaction.getBillAmount(),
+                        transaction.getTransactionDate(),
+                        transaction.getAccountDisplayName(),
+                        0.0,
                         transaction.getTransactionId(),
                 };
                 tableModel.addRow(row);

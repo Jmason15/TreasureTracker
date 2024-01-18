@@ -1,5 +1,6 @@
 package com.finance.treasuretracker.controller;
 
+import com.finance.treasuretracker.model.dto.TransactionGridInterface;
 import com.finance.treasuretracker.service.TransactionServiceInterface;
 import com.finance.treasuretracker.model.Transaction;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -41,5 +42,9 @@ public class TransactionController {
     @DeleteMapping("/{id}")
     public void deleteTransaction(@PathVariable Long id) {
         transactionService.deleteTransaction(id);
+    }
+
+    public List<TransactionGridInterface>getAllTransactionsForGrid() {
+        return transactionService.getAllTransactionsForGrid();
     }
 }

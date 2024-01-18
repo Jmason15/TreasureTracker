@@ -40,16 +40,16 @@ public class AccountButtonEditor extends DefaultCellEditor {
             int row = table.convertRowIndexToModel(table.getEditingRow());
             Object accountIdObj = table.getModel().getValueAt(row, 0); // Retrieve the ID object
 
-            Long accountId = null;
+            Integer accountId = null;
 
             if (accountIdObj != null) {
                 if (accountIdObj instanceof Long) {
-                    accountId = (Long) accountIdObj;
+                    accountId = (Integer) accountIdObj;
                 } else if (accountIdObj instanceof Integer) {
-                    accountId = ((Integer) accountIdObj).longValue();
+                    accountId = (Integer) accountIdObj;
                 } else if (accountIdObj instanceof String) {
                     try {
-                        accountId = Long.parseLong((String) accountIdObj);
+                        accountId = (Integer) accountIdObj;
                     } catch (NumberFormatException e) {
                         throw new IllegalStateException("Invalid Account ID format");
                     }
