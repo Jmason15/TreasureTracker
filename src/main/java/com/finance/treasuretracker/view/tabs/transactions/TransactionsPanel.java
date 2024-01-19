@@ -6,6 +6,7 @@ import com.finance.treasuretracker.controller.TransactionController;
 import com.finance.treasuretracker.model.BankRecord;
 import com.finance.treasuretracker.model.Transaction;
 import com.finance.treasuretracker.model.dto.TransactionGridInterface;
+import com.finance.treasuretracker.utils.CurrencyCellRenderer;
 import com.finance.treasuretracker.view.tabs.utils.ArrayUtils;
 
 import javax.swing.*;
@@ -16,6 +17,7 @@ import javax.swing.table.TableColumnModel;
 import java.awt.*;
 import java.util.*;
 import java.util.List;
+import java.text.NumberFormat;
 
 public class TransactionsPanel extends JPanel {
     private final JTable transactionsTable;
@@ -53,13 +55,7 @@ public class TransactionsPanel extends JPanel {
         // Add the top panel to the main panel
         add(topPanel, BorderLayout.NORTH);
 
-        // Define column names
-        for (BankRecord bankRecord : bankRecordList) {
-            String columnName = bankRecord.getAccount().getDisplayName() + " Balance";
-            columnNamesList.add(columnName);
-            balanceColumnNames.add(columnName); // Add to balance columns list
-            accountBalances.put(columnName, bankRecord.getAmount()); // Initialize balance for each account
-        }
+
 
         columnNamesList.add("Paid");
         columnNamesList.add("Bill Name");
@@ -67,11 +63,14 @@ public class TransactionsPanel extends JPanel {
         columnNamesList.add("Date");
         columnNamesList.add("account");
         columnNamesList.add("transactionId");
+        columnNamesList.add("Total");
 
+        // Define column names
         for (BankRecord bankRecord : bankRecordList) {
             String columnName = bankRecord.getAccount().getDisplayName() + " Balance";
             columnNamesList.add(columnName);
             balanceColumnNames.add(columnName); // Add to balance columns list
+            accountBalances.put(columnName, bankRecord.getAmount()); // Initialize balance for each account
         }
 
 // Convert the list back to an array if needed
@@ -127,6 +126,9 @@ public class TransactionsPanel extends JPanel {
                 }
             }
         });
+        transactionsTable.setDefaultRenderer(Double.class, new CurrencyCellRenderer());
+
+
         // Add the table to a scroll pane (for better UI handling)
         JScrollPane scrollPane = new JScrollPane(transactionsTable);
         add(scrollPane, BorderLayout.CENTER);
@@ -182,7 +184,7 @@ public class TransactionsPanel extends JPanel {
         for (int i = 0; i < columnNamesList.size(); i++) {
             columnIndexMap.put(columnNamesList.get(i), i);
         }
-
+        transactions.sort(Comparator.comparing(TransactionGridInterface::getTransactionDate));
         for (TransactionGridInterface transaction : transactions) {
             if (showPaidTransactions || !transaction.getPaid()) {
                 Object[] row = new Object[columnNamesList.size()];
@@ -190,22 +192,24 @@ public class TransactionsPanel extends JPanel {
                 // Set values for each column based on the transaction
                 row[columnIndexMap.get("Paid")] = transaction.getPaid();
                 row[columnIndexMap.get("Bill Name")] = transaction.getBillName();
-                row[columnIndexMap.get("Amount")] = transaction.getBillAmount();
+                row[columnIndexMap.get("Amount")] = formatAsCurrency(transaction.getBillAmount());
                 row[columnIndexMap.get("Date")] = transaction.getTransactionDate();
                 row[columnIndexMap.get("account")] = transaction.getAccountDisplayName();
                 row[columnIndexMap.get("transactionId")] = transaction.getTransactionId();
-
+                double total = 0.0;
                 // Handle dynamic balance columns
                 // Assume the balance column names are stored in a list/set
                 for (String balanceColumnName : balanceColumnNames) {
                     Double currentBalance = accountBalances.get(balanceColumnName);
-                    if(Objects.equals(balanceColumnName, transaction.getAccountDisplayName() + " Balance")) {
+                    if(Objects.equals(balanceColumnName, transaction.getAccountDisplayName() + " Balance")
+                      && !transaction.getPaid()) {
                             currentBalance += transaction.getBillAmount(); // Assuming bill amount is subtracted from balance
                             accountBalances.put(balanceColumnName, currentBalance);
                     }
                     row[columnIndexMap.get(balanceColumnName)] = accountBalances.getOrDefault(balanceColumnName, 0.0);
+                    total += accountBalances.getOrDefault(balanceColumnName, 0.0);
                 }
-
+                row[columnIndexMap.get("Total")] = total;
                 tableModel.addRow(row);
             }
         }
@@ -217,6 +221,11 @@ public class TransactionsPanel extends JPanel {
             String columnName = bankRecord.getAccount().getDisplayName() + " Balance";
             accountBalances.put(columnName, bankRecord.getAmount()); // Initialize balance for each account
         }
+    }
+
+    private String formatAsCurrency(double amount) {
+        NumberFormat currencyFormat = NumberFormat.getCurrencyInstance();
+        return currencyFormat.format(amount);
     }
 }
 

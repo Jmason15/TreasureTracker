@@ -9,6 +9,7 @@ import com.finance.treasuretracker.controller.DropdownController;
 import com.finance.treasuretracker.model.Account;
 import com.finance.treasuretracker.model.Bill;
 import com.finance.treasuretracker.model.Dropdown;
+import com.finance.treasuretracker.view.tabs.bills.enums.BillColumnENUM;
 import com.finance.treasuretracker.view.tabs.bills.utils.BillButtonEditor;
 import com.finance.treasuretracker.view.tabs.utils.ButtonRenderer;
 import com.finance.treasuretracker.view.tabs.utils.ComboBoxItem;
@@ -18,7 +19,9 @@ import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.EnumMap;
 import java.util.List;
+import java.util.Map;
 
 public class BillsView extends JPanel {
 
@@ -38,7 +41,7 @@ public class BillsView extends JPanel {
 
     private void initializeUI() {
         // Table model
-        tableModel = new DefaultTableModel(new Object[]{"ID", "Name", "Due Day", "Amount", "Alternate", "Edit", "Delete"}, 0);
+        tableModel = new DefaultTableModel(BillColumnENUM.getColumnNames(), 0);
         JTable table = new JTable(tableModel) {
             @Override
             public Class<?> getColumnClass(int column) {
@@ -91,24 +94,22 @@ public class BillsView extends JPanel {
     }
 
     private void populateTableWithData() {
-        // Retrieve the list of bills from the controller
         List<Bill> bills = billController.getAllBills();
-
-        // Clear existing data in the table
         tableModel.setRowCount(0);
 
-        // Add each bill as a row in the table model
         for (Bill bill : bills) {
-            Object[] row = new Object[]{
-                    bill.getBillId(),
-                    bill.getName(),
-                    bill.getDueDay(),
-                    bill.getAmount(),
-                    bill.getAlternate(),
-                    "Edit",
-                    "Delete"
-            };
-            tableModel.addRow(row);
+            Map<BillColumnENUM, Object> rowData = new EnumMap<>(BillColumnENUM.class);
+            rowData.put(BillColumnENUM.ID, bill.getBillId());
+            rowData.put(BillColumnENUM.NAME, bill.getName());
+            rowData.put(BillColumnENUM.DUE_DAY, bill.getDueDay());
+            rowData.put(BillColumnENUM.ACCOUNT, (bill.getAccount() != null) ? bill.getAccount().getDisplayName() : "N/A");
+            rowData.put(BillColumnENUM.BANK, (bill.getAccount() != null && bill.getAccount().getBank() != null) ? bill.getAccount().getBank().getName() : "N/A");
+            rowData.put(BillColumnENUM.AMOUNT, bill.getAmount());
+            rowData.put(BillColumnENUM.ALTERNATE, bill.getAlternate());
+            rowData.put(BillColumnENUM.EDIT, "Edit");
+            rowData.put(BillColumnENUM.DELETE, "Delete");
+
+            tableModel.addRow(rowData.values().toArray());
         }
     }
 

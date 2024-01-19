@@ -12,10 +12,14 @@ public interface BankRecordRepository extends JpaRepository<BankRecord, Integer>
 
     @Query("""
             SELECT br
-            FROM BankRecord br
-            WHERE br.date = (SELECT MAX(br2.date)
+                        FROM BankRecord br
+                        WHERE br.date = (
+                            SELECT MAX(br2.date)
                             FROM BankRecord br2
-                            WHERE br2.account = br.account)
+                            WHERE br2.account = br.account
+                        )
+                        ORDER BY br.date ASC
+            
             """)
     List<BankRecord> getCurrentAccountFunds();
 }
