@@ -3,8 +3,10 @@ package com.finance.treasuretracker.view.tabs.transactions;
 import com.finance.treasuretracker.controller.AccountController;
 import com.finance.treasuretracker.controller.BankRecordController;
 import com.finance.treasuretracker.controller.TransactionController;
+import com.finance.treasuretracker.model.BankRecord;
 import com.finance.treasuretracker.model.Transaction;
 import com.finance.treasuretracker.model.dto.TransactionGridInterface;
+import com.finance.treasuretracker.view.tabs.utils.ArrayUtils;
 
 import javax.swing.*;
 import javax.swing.event.TableModelEvent;
@@ -12,12 +14,18 @@ import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumnModel;
 import java.awt.*;
+import java.util.*;
 import java.util.List;
 
 public class TransactionsPanel extends JPanel {
     private final JTable transactionsTable;
     private final DefaultTableModel tableModel;
     private final TransactionController transactionController;
+    private final List<String> columnNamesList;
+    private final List<String> balanceColumnNames;
+    private final Map<String, Double> accountBalances;
+
+    private final List<BankRecord> bankRecordList;
 
     private boolean showPaidTransactions = false; // Flag to toggle paid transactions
 
@@ -28,6 +36,10 @@ public class TransactionsPanel extends JPanel {
 
     public TransactionsPanel(TransactionController transactionController1, BankRecordController bankRecordController, AccountController accountController) {
         this.transactionController = transactionController1;
+        this.balanceColumnNames = new ArrayList<>();
+        this.columnNamesList = new ArrayList<>();
+        this.accountBalances = new HashMap<>();
+        bankRecordList = bankRecordController.getCurrentAccountFunds();
         setLayout(new BorderLayout());
         // Panel for the top section
         JPanel topPanel = new JPanel(new BorderLayout());
@@ -42,7 +54,28 @@ public class TransactionsPanel extends JPanel {
         add(topPanel, BorderLayout.NORTH);
 
         // Define column names
-        String[] columnNames = {"Paid", "Bill Name", "Amount", "Date", "account", "USAA Balance", "transactionId"};
+        for (BankRecord bankRecord : bankRecordList) {
+            String columnName = bankRecord.getAccount().getDisplayName() + " Balance";
+            columnNamesList.add(columnName);
+            balanceColumnNames.add(columnName); // Add to balance columns list
+            accountBalances.put(columnName, bankRecord.getAmount()); // Initialize balance for each account
+        }
+
+        columnNamesList.add("Paid");
+        columnNamesList.add("Bill Name");
+        columnNamesList.add("Amount");
+        columnNamesList.add("Date");
+        columnNamesList.add("account");
+        columnNamesList.add("transactionId");
+
+        for (BankRecord bankRecord : bankRecordList) {
+            String columnName = bankRecord.getAccount().getDisplayName() + " Balance";
+            columnNamesList.add(columnName);
+            balanceColumnNames.add(columnName); // Add to balance columns list
+        }
+
+// Convert the list back to an array if needed
+        String[] columnNames = columnNamesList.toArray(new String[0]);
 
         // Create a table model
         tableModel = new DefaultTableModel(columnNames, 0) {
@@ -69,7 +102,9 @@ public class TransactionsPanel extends JPanel {
             @Override
             public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
                 JCheckBox checkBox = new JCheckBox();
-                checkBox.setSelected((Boolean) value);
+                if (value != null) {
+                    checkBox.setSelected((Boolean) value);
+                }
                 checkBox.setHorizontalAlignment(JLabel.CENTER);
                 return checkBox;
             }
@@ -139,20 +174,48 @@ public class TransactionsPanel extends JPanel {
 
     // Method to refresh the table data (if needed)
     public void refreshTableData(List<TransactionGridInterface> transactions) {
+        updateAccountBalances(transactions);
         tableModel.setRowCount(0); // Clear existing data
+
+        // Create a map for column name to index
+        Map<String, Integer> columnIndexMap = new HashMap<>();
+        for (int i = 0; i < columnNamesList.size(); i++) {
+            columnIndexMap.put(columnNamesList.get(i), i);
+        }
+
         for (TransactionGridInterface transaction : transactions) {
-            if (showPaidTransactions || !transaction.getPaid()) { // Check paid status based on the flag
-                Object[] row = {
-                        transaction.getPaid(),
-                        transaction.getBillName(),
-                        transaction.getBillAmount(),
-                        transaction.getTransactionDate(),
-                        transaction.getAccountDisplayName(),
-                        0.0,
-                        transaction.getTransactionId(),
-                };
+            if (showPaidTransactions || !transaction.getPaid()) {
+                Object[] row = new Object[columnNamesList.size()];
+
+                // Set values for each column based on the transaction
+                row[columnIndexMap.get("Paid")] = transaction.getPaid();
+                row[columnIndexMap.get("Bill Name")] = transaction.getBillName();
+                row[columnIndexMap.get("Amount")] = transaction.getBillAmount();
+                row[columnIndexMap.get("Date")] = transaction.getTransactionDate();
+                row[columnIndexMap.get("account")] = transaction.getAccountDisplayName();
+                row[columnIndexMap.get("transactionId")] = transaction.getTransactionId();
+
+                // Handle dynamic balance columns
+                // Assume the balance column names are stored in a list/set
+                for (String balanceColumnName : balanceColumnNames) {
+                    Double currentBalance = accountBalances.get(balanceColumnName);
+                    if(Objects.equals(balanceColumnName, transaction.getAccountDisplayName() + " Balance")) {
+                            currentBalance += transaction.getBillAmount(); // Assuming bill amount is subtracted from balance
+                            accountBalances.put(balanceColumnName, currentBalance);
+                    }
+                    row[columnIndexMap.get(balanceColumnName)] = accountBalances.getOrDefault(balanceColumnName, 0.0);
+                }
+
                 tableModel.addRow(row);
             }
+        }
+    }
+    private void updateAccountBalances(List<TransactionGridInterface> transactions) {
+        // Reset balances to initial values from bank records
+        accountBalances.clear();
+        for (BankRecord bankRecord : bankRecordList) {
+            String columnName = bankRecord.getAccount().getDisplayName() + " Balance";
+            accountBalances.put(columnName, bankRecord.getAmount()); // Initialize balance for each account
         }
     }
 }
