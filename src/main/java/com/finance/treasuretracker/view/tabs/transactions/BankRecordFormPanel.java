@@ -4,6 +4,7 @@ import com.finance.treasuretracker.controller.AccountController;
 import com.finance.treasuretracker.controller.BankRecordController;
 import com.finance.treasuretracker.model.Account;
 import com.finance.treasuretracker.model.BankRecord;
+import com.finance.treasuretracker.utils.DataReloadListener;
 
 import javax.swing.*;
 import java.awt.*;
@@ -16,9 +17,11 @@ import java.util.List;
 public class BankRecordFormPanel extends JPanel {
     private final List<JTextField> amountFields = new ArrayList<>();
     private final BankRecordController bankRecordController;
-    public BankRecordFormPanel(BankRecordController bankRecordController, AccountController accountController) {
-        this.bankRecordController = bankRecordController;
 
+    private final DataReloadListener listener;
+    public BankRecordFormPanel(BankRecordController bankRecordController, AccountController accountController, DataReloadListener listener) {
+        this.bankRecordController = bankRecordController;
+        this.listener = listener;
         List<BankRecord> bankRecordList = bankRecordController.getCurrentAccountFunds();
         if (bankRecordList.isEmpty()) {
             List<Account> accountList = accountController.getAllAccounts();
@@ -72,6 +75,7 @@ public class BankRecordFormPanel extends JPanel {
                         System.err.println("Invalid number format for bank record amount");
                     }
                 }
+                listener.reloadData();
             }
         });
         return saveButton;

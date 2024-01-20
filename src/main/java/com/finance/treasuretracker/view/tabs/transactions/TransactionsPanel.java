@@ -7,7 +7,8 @@ import com.finance.treasuretracker.model.BankRecord;
 import com.finance.treasuretracker.model.Transaction;
 import com.finance.treasuretracker.model.dto.TransactionGridInterface;
 import com.finance.treasuretracker.utils.CurrencyCellRenderer;
-import com.finance.treasuretracker.view.tabs.utils.ArrayUtils;
+import com.finance.treasuretracker.utils.DataReloadListener;
+import com.finance.treasuretracker.view.tabs.transactions.callRenderers.BelowThresholdRedHighlighter;
 
 import javax.swing.*;
 import javax.swing.event.TableModelEvent;
@@ -19,7 +20,7 @@ import java.util.*;
 import java.util.List;
 import java.text.NumberFormat;
 
-public class TransactionsPanel extends JPanel {
+public class TransactionsPanel extends JPanel implements DataReloadListener {
     private final JTable transactionsTable;
     private final DefaultTableModel tableModel;
     private final TransactionController transactionController;
@@ -27,9 +28,10 @@ public class TransactionsPanel extends JPanel {
     private final List<String> balanceColumnNames;
     private final Map<String, Double> accountBalances;
 
-    private final List<BankRecord> bankRecordList;
+    private List<BankRecord> bankRecordList;
 
     private boolean showPaidTransactions = false; // Flag to toggle paid transactions
+    private BankRecordController bankRecordController;
 
     private void togglePaidTransactions() {
         showPaidTransactions = !showPaidTransactions; // Toggle the flag
@@ -41,11 +43,12 @@ public class TransactionsPanel extends JPanel {
         this.balanceColumnNames = new ArrayList<>();
         this.columnNamesList = new ArrayList<>();
         this.accountBalances = new HashMap<>();
+        this.bankRecordController = bankRecordController;
         bankRecordList = bankRecordController.getCurrentAccountFunds();
         setLayout(new BorderLayout());
         // Panel for the top section
         JPanel topPanel = new JPanel(new BorderLayout());
-        topPanel.add(new BankRecordFormPanel(bankRecordController, accountController), BorderLayout.CENTER);
+        topPanel.add(new BankRecordFormPanel(bankRecordController, accountController, this), BorderLayout.CENTER);
 
         // Toggle switch for showing paid transactions
         JCheckBox toggleSwitch = new JCheckBox("Show Paid Transactions");
@@ -127,7 +130,11 @@ public class TransactionsPanel extends JPanel {
             }
         });
         transactionsTable.setDefaultRenderer(Double.class, new CurrencyCellRenderer());
-
+// Assuming 'transactionsTable' is your JTable and 'tableModel' is the DefaultTableModel
+        TableColumnModel columnModel = transactionsTable.getColumnModel();
+        BelowThresholdRedHighlighter totalColumnRenderer = new BelowThresholdRedHighlighter();
+        int totalColumnIndex = tableModel.findColumn("Total");
+        columnModel.getColumn(totalColumnIndex).setCellRenderer(totalColumnRenderer);
 
         // Add the table to a scroll pane (for better UI handling)
         JScrollPane scrollPane = new JScrollPane(transactionsTable);
@@ -226,6 +233,30 @@ public class TransactionsPanel extends JPanel {
     private String formatAsCurrency(double amount) {
         NumberFormat currencyFormat = NumberFormat.getCurrencyInstance();
         return currencyFormat.format(amount);
+    }
+
+    public void reloadData() {
+        bankRecordList = bankRecordController.getCurrentAccountFunds();
+
+        // Clear existing data
+        columnNamesList.clear();
+        balanceColumnNames.clear();
+        accountBalances.clear();
+
+        // Repopulate columnNamesList, balanceColumnNames, and accountBalances
+        columnNamesList.addAll(Arrays.asList("Paid", "Bill Name", "Amount", "Date", "account", "transactionId", "Total"));
+        for (BankRecord bankRecord : bankRecordList) {
+            String columnName = bankRecord.getAccount().getDisplayName() + " Balance";
+            columnNamesList.add(columnName);
+            balanceColumnNames.add(columnName);
+            accountBalances.put(columnName, bankRecord.getAmount());
+        }
+
+        // Fetch new transactions data
+        List<TransactionGridInterface> newTransactions = transactionController.getAllTransactionsForGrid();
+
+        // Refresh the table with new data
+        refreshTableData(newTransactions);
     }
 }
 
