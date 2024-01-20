@@ -8,6 +8,7 @@ public enum BillColumnENUM {
     ID("ID"),
     NAME("Name"),
     DUE_DAY("Due Day"),
+    FREQUENCY("Frequency"),
     ACCOUNT("Account"),
     BANK("Bank"),
     AMOUNT("Amount"),

@@ -45,7 +45,14 @@ public class BillsView extends JPanel {
         JTable table = new JTable(tableModel) {
             @Override
             public Class<?> getColumnClass(int column) {
-                return (column >= 5) ? JButton.class : Object.class;
+                BillColumnENUM columnEnum = BillColumnENUM.values()[column];
+                switch (columnEnum) {
+                    case EDIT:   // If your enum has an EDIT field
+                    case DELETE: // If your enum has a DELETE field
+                        return JButton.class;
+                    default:
+                        return Object.class;
+                }
             }
         };
 
@@ -93,7 +100,7 @@ public class BillsView extends JPanel {
         // No additional action needed for the NO_OPTION as the dialog will simply close
     }
 
-    private void populateTableWithData() {
+    public void populateTableWithData() {
         List<Bill> bills = billController.getAllBills();
         tableModel.setRowCount(0);
 
@@ -102,6 +109,7 @@ public class BillsView extends JPanel {
             rowData.put(BillColumnENUM.ID, bill.getBillId());
             rowData.put(BillColumnENUM.NAME, bill.getName());
             rowData.put(BillColumnENUM.DUE_DAY, bill.getDueDay());
+            rowData.put(BillColumnENUM.FREQUENCY, bill.getFrequency().getDisplay());
             rowData.put(BillColumnENUM.ACCOUNT, (bill.getAccount() != null) ? bill.getAccount().getDisplayName() : "N/A");
             rowData.put(BillColumnENUM.BANK, (bill.getAccount() != null && bill.getAccount().getBank() != null) ? bill.getAccount().getBank().getName() : "N/A");
             rowData.put(BillColumnENUM.AMOUNT, bill.getAmount());
@@ -277,90 +285,66 @@ public class BillsView extends JPanel {
     }
 
 
-    // Create a custom cell renderer for the Edit and Delete buttons
-    class BillButtonRenderer extends DefaultTableCellRenderer {
-        private JButton editButton;
-        private JButton deleteButton;
-
-        public BillButtonRenderer() {
-            editButton = new JButton("Edit");
-            deleteButton = new JButton("Delete");
-        }
-
-        @Override
-        public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
-            JPanel panel = new JPanel(new FlowLayout(FlowLayout.CENTER));
-
-            if ("Edit".equals(value)) {
-                panel.add(editButton);
-            } else if ("Delete".equals(value)) {
-                panel.add(deleteButton);
-            }
-
-            return panel;
-        }
-    }
-
     // Create a custom cell editor for the Edit and Delete buttons
-    class BillButtonEditor extends DefaultCellEditor {
-        private JButton editButton;
-        private JButton deleteButton;
-        private BillController billController;
-        private BillsView billsView; // Assuming this is the name of your view class
-
-        private JTable table;
-
-        public BillButtonEditor(JCheckBox checkBox, BillController billController, BillsView billsView, JTable table) {
-            super(checkBox);
-            this.billController = billController;
-            this.billsView = billsView;
-            this.table = table;
-            editButton = new JButton("Edit");
-            deleteButton = new JButton("Delete");
-            editButton.addActionListener(e -> fireEditingStopped());
-            deleteButton.addActionListener(e -> fireEditingStopped());
-        }
-
-        @Override
-        public Component getTableCellEditorComponent(JTable table, Object value, boolean isSelected, int row, int column) {
-            if ("Edit".equals(value)) {
-                int modelRow = table.convertRowIndexToModel(row);
-                Object billIdObj = table.getModel().getValueAt(modelRow, 0); // Retrieve the ID object
-
-                Long billId = null;
-                if (billIdObj instanceof Integer) {
-                    // If it's an Integer, convert to Long
-                    billId = ((Integer) billIdObj).longValue();
-                } else if (billIdObj instanceof Long) {
-                    // If it's already a Long, cast directly
-                    billId = (Long) billIdObj;
-                } else {
-                    // Handle other unexpected types, perhaps log a warning or error
-                    System.err.println("Unexpected type for bill ID: " + billIdObj.getClass().getName());
-                }
-
-                // Fetch the bill by ID from your BillController
-                Bill bill = billController.getBillById(billId);
-                if (bill != null) {
-                    billsView.openAddBillForm(bill); // Open the form with the selected bill for editing
-                }
-            } else if ("Delete".equals(value)) {
-                int modelRow = table.convertRowIndexToModel(row);
-                Object billIdObj = table.getModel().getValueAt(modelRow, 0); // Retrieve the ID object
-
-                Long billId;
-                if (billIdObj instanceof Long) {
-                    billId = (Long) billIdObj; // Cast to Integer
-                } else {
-                    throw new IllegalStateException("Bill ID is not of a recognized type");
-                }
-
-                // Delete the bill by ID from your BillController
-                billController.deleteBill(billId);
-                billsView.populateTableWithData(); // Refresh the table
-            }
-
-            return null;
-        }
-    }
+//    class BillButtonEditor extends DefaultCellEditor {
+//        private JButton editButton;
+//        private JButton deleteButton;
+//        private BillController billController;
+//        private BillsView billsView; // Assuming this is the name of your view class
+//
+//        private JTable table;
+//
+//        public BillButtonEditor(JCheckBox checkBox, BillController billController, BillsView billsView, JTable table) {
+//            super(checkBox);
+//            this.billController = billController;
+//            this.billsView = billsView;
+//            this.table = table;
+//            editButton = new JButton("Edit");
+//            deleteButton = new JButton("Delete");
+//            editButton.addActionListener(e -> fireEditingStopped());
+//            deleteButton.addActionListener(e -> fireEditingStopped());
+//        }
+//
+//        @Override
+//        public Component getTableCellEditorComponent(JTable table, Object value, boolean isSelected, int row, int column) {
+//            if ("Edit".equals(value)) {
+//                int modelRow = table.convertRowIndexToModel(row);
+//                Object billIdObj = table.getModel().getValueAt(modelRow, 0); // Retrieve the ID object
+//
+//                Long billId = null;
+//                if (billIdObj instanceof Integer) {
+//                    // If it's an Integer, convert to Long
+//                    billId = ((Integer) billIdObj).longValue();
+//                } else if (billIdObj instanceof Long) {
+//                    // If it's already a Long, cast directly
+//                    billId = (Long) billIdObj;
+//                } else {
+//                    // Handle other unexpected types, perhaps log a warning or error
+//                    System.err.println("Unexpected type for bill ID: " + billIdObj.getClass().getName());
+//                }
+//
+//                // Fetch the bill by ID from your BillController
+//                Bill bill = billController.getBillById(billId);
+//                if (bill != null) {
+//                    billsView.openAddBillForm(bill); // Open the form with the selected bill for editing
+//                }
+//            } else if ("Delete".equals(value)) {
+//                int modelRow = table.convertRowIndexToModel(row);
+//                Object billIdObj = table.getModel().getValueAt(modelRow, 0); // Retrieve the ID object
+//
+//                Long billId;
+//                if (billIdObj instanceof Long) {
+//                    billId = (Long) billIdObj; // Cast to Integer
+//                } else {
+//                    throw new IllegalStateException("Bill ID is not of a recognized type");
+//                }
+//
+//                // Delete the bill by ID from your BillController
+//                billController.deleteBill(billId);
+//                billsView.populateTableWithData(); // Refresh the table
+//            }
+//
+//            return null;
+//        }
+//    }
 }
