@@ -67,6 +67,7 @@ public class TransactionsPanel extends JPanel implements DataReloadListener {
         columnNamesList.add("account");
         columnNamesList.add("transactionId");
         columnNamesList.add("Total");
+        columnNamesList.add("Lowest In Account");
 
         // Define column names
         for (BankRecord bankRecord : bankRecordList) {
@@ -134,7 +135,9 @@ public class TransactionsPanel extends JPanel implements DataReloadListener {
         TableColumnModel columnModel = transactionsTable.getColumnModel();
         BelowThresholdRedHighlighter totalColumnRenderer = new BelowThresholdRedHighlighter();
         int totalColumnIndex = tableModel.findColumn("Total");
+        int lowestColumnIndex = tableModel.findColumn("Lowest In Account");
         columnModel.getColumn(totalColumnIndex).setCellRenderer(totalColumnRenderer);
+        columnModel.getColumn(lowestColumnIndex).setCellRenderer(totalColumnRenderer);
 
         // Add the table to a scroll pane (for better UI handling)
         JScrollPane scrollPane = new JScrollPane(transactionsTable);
@@ -191,6 +194,8 @@ public class TransactionsPanel extends JPanel implements DataReloadListener {
         for (int i = 0; i < columnNamesList.size(); i++) {
             columnIndexMap.put(columnNamesList.get(i), i);
         }
+        boolean firstAccount = true;
+
         transactions.sort(Comparator.comparing(TransactionGridInterface::getTransactionDate));
         for (TransactionGridInterface transaction : transactions) {
             if (showPaidTransactions || !transaction.getPaid()) {
@@ -216,9 +221,28 @@ public class TransactionsPanel extends JPanel implements DataReloadListener {
                     row[columnIndexMap.get(balanceColumnName)] = accountBalances.getOrDefault(balanceColumnName, 0.0);
                     total += accountBalances.getOrDefault(balanceColumnName, 0.0);
                 }
+
                 row[columnIndexMap.get("Total")] = total;
+//                row[columnIndexMap.get("Lowest In Account")] = lowestInAccount;
                 tableModel.addRow(row);
             }
+        }
+        // Assuming 'tableModel' is your DefaultTableModel
+        double lowestInAccount = Double.MAX_VALUE; // Initialize to a very high value
+
+// Loop through the table model in reverse
+        for (int i = tableModel.getRowCount() - 1; i >= 0; i--) {
+            // Assuming the 'Total' is stored in a specific column, let's say the last column
+            double total = (Double) tableModel.getValueAt(i, columnIndexMap.get("Total"));
+
+            // Update the lowest value encountered so far
+            if (total < lowestInAccount) {
+                lowestInAccount = total;
+            }
+
+            // Update the 'Lowest In Account' value for the current row
+            // Assuming 'Lowest In Account' is in a specific column, for example, second last
+            tableModel.setValueAt(lowestInAccount, i, columnIndexMap.get("Lowest In Account"));
         }
     }
     private void updateAccountBalances(List<TransactionGridInterface> transactions) {
@@ -244,7 +268,7 @@ public class TransactionsPanel extends JPanel implements DataReloadListener {
         accountBalances.clear();
 
         // Repopulate columnNamesList, balanceColumnNames, and accountBalances
-        columnNamesList.addAll(Arrays.asList("Paid", "Bill Name", "Amount", "Date", "account", "transactionId", "Total"));
+        columnNamesList.addAll(Arrays.asList("Paid", "Bill Name", "Amount", "Date", "account", "transactionId", "Total", "Lowest In Account"));
         for (BankRecord bankRecord : bankRecordList) {
             String columnName = bankRecord.getAccount().getDisplayName() + " Balance";
             columnNamesList.add(columnName);

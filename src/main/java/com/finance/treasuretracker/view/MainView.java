@@ -15,7 +15,8 @@ public class MainView {
     public static void createAndShowGUI(AccountController accountController, BankController bankController,
                                         DropdownController dropdownController,
                                         DropdownTypeController dropdownTypeController, BillController billController,
-                                        TransactionController transactionController, BankRecordController bankRecordController) {
+                                        TransactionController transactionController, BankRecordController bankRecordController,
+                                        SummaryController summaryController) {
         JFrame frame = new JFrame("Treasure Tracker");
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.setMinimumSize(new Dimension(2000, 900));
@@ -25,7 +26,7 @@ public class MainView {
         menu.setupMenu(frame, dropdownTypeController, dropdownController);
 
         JTabbedPane tabbedPane = new JTabbedPane();
-        tabbedPane.addTab("Summary", new SummaryPanel());
+        tabbedPane.addTab("Summary", new SummaryPanel(summaryController));
         tabbedPane.addTab("Transactions", new TransactionsPanel(transactionController, bankRecordController, accountController));
         tabbedPane.addTab("Bills", new BillsView(billController, dropdownController, accountController));
         tabbedPane.addTab("Banks", new BanksView(bankController)); // Pass the controller here

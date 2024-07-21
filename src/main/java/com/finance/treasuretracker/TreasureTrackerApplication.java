@@ -53,6 +53,10 @@ public class TreasureTrackerApplication {
 		BankRecordServiceInterface bankRecordService = new BankRecordServiceImpl(bankRecordRepository);
 		BankRecordController bankRecordController = new BankRecordController(bankRecordService);
 
+		SummaryRepository summaryRepository = ctx.getBean(SummaryRepository.class);
+		SummaryServiceInterface summaryServiceInterface = new SummaryServiceImpl(summaryRepository);
+		SummaryController summaryController = new SummaryController(summaryServiceInterface);
+
 
 
 
@@ -60,7 +64,7 @@ public class TreasureTrackerApplication {
 		SwingUtilities.invokeLater(() -> {
 			// Create and display your Swing UI here, passing the bankController
 			MainView.createAndShowGUI(accountController, bankController, dropdownController, dropdownTypeController,
-					billController, transactionController, bankRecordController);
+					billController, transactionController, bankRecordController, summaryController);
 		});
 	}
 }
