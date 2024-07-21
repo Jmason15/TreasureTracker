@@ -20,8 +20,8 @@ public enum SummaryColumnEnum {
     }
 
     public static String[] getColumnNames() {
-        return Arrays.stream(BillColumnENUM.values())
-                .map(BillColumnENUM::getColumnName)
+        return Arrays.stream(SummaryColumnEnum.values())
+                .map(SummaryColumnEnum::getColumnName)
                 .toArray(String[]::new);
     }
 }
