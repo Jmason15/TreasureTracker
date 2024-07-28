@@ -14,6 +14,10 @@ public class SummaryServiceImpl implements SummaryServiceInterface{
 
     @Override
     public List<SummaryViewInterface> findAllSummary() {
+        List<SummaryViewInterface> toReturn = summaryRepository.findAllSummary();
+        for(SummaryViewInterface summaryRecord : toReturn){
+
+        }
         return summaryRepository.findAllSummary();
     }
 }

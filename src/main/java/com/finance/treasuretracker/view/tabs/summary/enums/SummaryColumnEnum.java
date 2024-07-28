@@ -1,13 +1,17 @@
 package com.finance.treasuretracker.view.tabs.summary.enums;
 
-import com.finance.treasuretracker.view.tabs.bills.enums.BillColumnENUM;
-
 import java.util.Arrays;
 
 public enum SummaryColumnEnum {
     NAME("Name"),
+    ACCOUNT("Account"),
+    FREQUENCY("Frequency"),
     AMOUNT("Amount"),
-    ACCOUNT("Account");
+    TIMES_PER_YEAR("Times per Year"),
+    COUNT_REMAINING("Count Remaining"),
+    COUNT_PAID("Count Paid"),
+    AMOUNT_REMAINING("Amount Remaining"),
+    AMOUNT_PAID("Amount Paid");
 
     private final String columnName;
 

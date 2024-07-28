@@ -36,9 +36,18 @@ public class SummaryPanel extends JPanel {
         summaryTableModel.setRowCount(0);
         for (SummaryViewInterface summary : summaryData) {
             Map<SummaryColumnEnum, Object> rowData = new EnumMap<>(SummaryColumnEnum.class);
-            rowData.put(SummaryColumnEnum.NAME, summary.getBillName());
-            rowData.put(SummaryColumnEnum.AMOUNT, summary.getBillAmount());
             rowData.put(SummaryColumnEnum.ACCOUNT, summary.getBillAccount());
+            rowData.put(SummaryColumnEnum.NAME, summary.getBillName());
+            rowData.put(SummaryColumnEnum.FREQUENCY, summary.getFrequencyDisplay());
+            rowData.put(SummaryColumnEnum.AMOUNT, summary.getBillAmount());
+            rowData.put(SummaryColumnEnum.TIMES_PER_YEAR, summary.getFrequencyValue());
+
+            rowData.put(SummaryColumnEnum.COUNT_REMAINING, summary.getTransactionRemaining());
+            rowData.put(SummaryColumnEnum.COUNT_PAID, summary.getTransactionPaid());
+            rowData.put(SummaryColumnEnum.AMOUNT_REMAINING, summary.getAmountRemaining());
+            rowData.put(SummaryColumnEnum.AMOUNT_PAID, summary.getAmountPaid());
+
+
 
             summaryTableModel.addRow(rowData.values().toArray());
         }
