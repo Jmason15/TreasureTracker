@@ -54,7 +54,7 @@ public class TreasureTrackerApplication {
 		BankRecordController bankRecordController = new BankRecordController(bankRecordService);
 
 		SummaryRepository summaryRepository = ctx.getBean(SummaryRepository.class);
-		SummaryServiceInterface summaryServiceInterface = new SummaryServiceImpl(summaryRepository);
+		SummaryServiceInterface summaryServiceInterface = new SummaryServiceImpl(summaryRepository, billRepository);
 		SummaryController summaryController = new SummaryController(summaryServiceInterface);
 
 

@@ -1,5 +1,6 @@
 package com.finance.treasuretracker.controller;
 
+import com.finance.treasuretracker.model.dto.SummaryViewDTO;
 import com.finance.treasuretracker.model.dto.SummaryViewInterface;
 import com.finance.treasuretracker.service.SummaryServiceInterface;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,7 +19,7 @@ private final SummaryServiceInterface summaryServiceInterface;
         this.summaryServiceInterface = summaryServiceInterface;
     }
 
-    public List<SummaryViewInterface> getAllSummaryView(){
+    public List<SummaryViewDTO> getAllSummaryView(){
         return summaryServiceInterface.findAllSummary();
     }
 }

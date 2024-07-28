@@ -1,6 +1,7 @@
 package com.finance.treasuretracker.view.tabs.summary;
 
 import com.finance.treasuretracker.controller.SummaryController;
+import com.finance.treasuretracker.model.dto.SummaryViewDTO;
 import com.finance.treasuretracker.model.dto.SummaryViewInterface;
 import com.finance.treasuretracker.view.tabs.summary.enums.SummaryColumnEnum;
 
@@ -32,23 +33,22 @@ public class SummaryPanel extends JPanel {
     }
 
     public void populateTableWithData() {
-        List<SummaryViewInterface> summaryData = summaryController.getAllSummaryView();
+        List<SummaryViewDTO> summaryData = summaryController.getAllSummaryView();
         summaryTableModel.setRowCount(0);
-        for (SummaryViewInterface summary : summaryData) {
+        for (SummaryViewDTO summary : summaryData) {
             Map<SummaryColumnEnum, Object> rowData = new EnumMap<>(SummaryColumnEnum.class);
             rowData.put(SummaryColumnEnum.ACCOUNT, summary.getBillAccount());
             rowData.put(SummaryColumnEnum.NAME, summary.getBillName());
             rowData.put(SummaryColumnEnum.FREQUENCY, summary.getFrequencyDisplay());
             rowData.put(SummaryColumnEnum.AMOUNT, summary.getBillAmount());
-            rowData.put(SummaryColumnEnum.TIMES_PER_YEAR, summary.getFrequencyValue());
+            //rowData.put(SummaryColumnEnum.TIMES_PER_YEAR, summary.getFrequencyValue());
+            rowData.put(SummaryColumnEnum.TOTAL_COUNT, summary.getTotalCount());
+            rowData.put(SummaryColumnEnum.TOTAL_EXPECTED_COUNT, summary.getExpectedTotalCount());
 
             rowData.put(SummaryColumnEnum.COUNT_REMAINING, summary.getTransactionRemaining());
             rowData.put(SummaryColumnEnum.COUNT_PAID, summary.getTransactionPaid());
             rowData.put(SummaryColumnEnum.AMOUNT_REMAINING, summary.getAmountRemaining());
             rowData.put(SummaryColumnEnum.AMOUNT_PAID, summary.getAmountPaid());
-
-
-
             summaryTableModel.addRow(rowData.values().toArray());
         }
     }

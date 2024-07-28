@@ -67,7 +67,6 @@ public class BillServiceImpl implements BillServiceInterface {
                 .toList();
         Calendar calendar = Calendar.getInstance();
         calendar.set(Calendar.DAY_OF_YEAR, 1); // First day of the current year
-        Date startOfYear = calendar.getTime();
         calendar.add(Calendar.YEAR, 1);
         calendar.add(Calendar.DAY_OF_YEAR, -1); // Last day of the current year
         Date lastDayOfYear = calendar.getTime();
