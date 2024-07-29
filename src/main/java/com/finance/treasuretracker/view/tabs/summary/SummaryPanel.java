@@ -8,9 +8,12 @@ import com.finance.treasuretracker.view.tabs.summary.enums.SummaryColumnEnum;
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 import java.awt.*;
+import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 public class SummaryPanel extends JPanel {
 
@@ -35,21 +38,43 @@ public class SummaryPanel extends JPanel {
     public void populateTableWithData() {
         List<SummaryViewDTO> summaryData = summaryController.getAllSummaryView();
         summaryTableModel.setRowCount(0);
+        BigDecimal totalLeftForYear = BigDecimal.valueOf(0);
+        BigDecimal totalPaidForYear = BigDecimal.valueOf(0);
         for (SummaryViewDTO summary : summaryData) {
-            Map<SummaryColumnEnum, Object> rowData = new EnumMap<>(SummaryColumnEnum.class);
-            rowData.put(SummaryColumnEnum.ACCOUNT, summary.getBillAccount());
-            rowData.put(SummaryColumnEnum.NAME, summary.getBillName());
-            rowData.put(SummaryColumnEnum.FREQUENCY, summary.getFrequencyDisplay());
-            rowData.put(SummaryColumnEnum.AMOUNT, summary.getBillAmount());
-            //rowData.put(SummaryColumnEnum.TIMES_PER_YEAR, summary.getFrequencyValue());
-            rowData.put(SummaryColumnEnum.TOTAL_COUNT, summary.getTotalCount());
-            rowData.put(SummaryColumnEnum.TOTAL_EXPECTED_COUNT, summary.getExpectedTotalCount());
+            Map<SummaryColumnEnum, Object> rowData = getSummaryColumnEnumObjectMap(summary, summary.getBillName());
+            if(Objects.nonNull(summary.getAmountRemaining())){
+                totalLeftForYear = totalLeftForYear.add(summary.getAmountRemaining()) ;
+            }
+            if(Objects.nonNull(summary.getAmountPaid())){
+                totalPaidForYear = totalPaidForYear.add(summary.getAmountPaid()) ;
+            }
 
-            rowData.put(SummaryColumnEnum.COUNT_REMAINING, summary.getTransactionRemaining());
-            rowData.put(SummaryColumnEnum.COUNT_PAID, summary.getTransactionPaid());
-            rowData.put(SummaryColumnEnum.AMOUNT_REMAINING, summary.getAmountRemaining());
-            rowData.put(SummaryColumnEnum.AMOUNT_PAID, summary.getAmountPaid());
             summaryTableModel.addRow(rowData.values().toArray());
         }
+        Map<SummaryColumnEnum, Object> rowData = getSummaryColumnEnumObjectMap(null, "Total");
+        rowData.put(SummaryColumnEnum.AMOUNT_REMAINING, totalLeftForYear);
+        rowData.put(SummaryColumnEnum.AMOUNT_PAID, totalPaidForYear);
+
+        summaryTableModel.addRow(rowData.values().toArray());
+
+
+    }
+
+    private static Map<SummaryColumnEnum, Object> getSummaryColumnEnumObjectMap(SummaryViewDTO summary, String rowName) {
+        Map<SummaryColumnEnum, Object> rowData = new EnumMap<>(SummaryColumnEnum.class);
+        rowData.put(SummaryColumnEnum.ACCOUNT, Objects.nonNull(summary) ? summary.getBillAccount(): null);
+        rowData.put(SummaryColumnEnum.NAME, rowName);
+        rowData.put(SummaryColumnEnum.FREQUENCY, Objects.nonNull(summary) ? summary.getFrequencyDisplay(): null);
+        rowData.put(SummaryColumnEnum.AMOUNT, Objects.nonNull(summary) ? summary.getBillAmount(): null);
+        //rowData.put(SummaryColumnEnum.TIMES_PER_YEAR, summary.getFrequencyValue());
+        rowData.put(SummaryColumnEnum.TOTAL_COUNT, Objects.nonNull(summary) ? summary.getTotalCount(): null);
+        rowData.put(SummaryColumnEnum.TOTAL_EXPECTED_COUNT, Objects.nonNull(summary) ? summary.getExpectedTotalCount(): null);
+
+        rowData.put(SummaryColumnEnum.COUNT_REMAINING, Objects.nonNull(summary) ? summary.getTransactionRemaining(): null);
+        rowData.put(SummaryColumnEnum.COUNT_PAID, Objects.nonNull(summary) ? summary.getTransactionPaid(): null);
+
+        rowData.put(SummaryColumnEnum.AMOUNT_REMAINING, Objects.nonNull(summary) ? summary.getAmountRemaining(): null);
+        rowData.put(SummaryColumnEnum.AMOUNT_PAID, Objects.nonNull(summary) ? summary.getAmountPaid(): null);
+        return rowData;
     }
 }

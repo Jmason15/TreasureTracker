@@ -106,7 +106,7 @@ public class BillsView extends JPanel {
 
         for (Bill bill : bills) {
             Map<BillColumnENUM, Object> rowData = new EnumMap<>(BillColumnENUM.class);
-            rowData.put(BillColumnENUM.ID, bill.getBillId());
+            //rowData.put(BillColumnENUM.ID, bill.getBillId());
             rowData.put(BillColumnENUM.NAME, bill.getName());
             rowData.put(BillColumnENUM.DUE_DAY, bill.getDueDay());
             rowData.put(BillColumnENUM.FREQUENCY, bill.getFrequency().getDisplay());
