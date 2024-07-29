@@ -31,7 +31,14 @@ public class SummaryPanel extends JPanel {
         JTable table = new JTable(summaryTableModel);
         populateTableWithData();
 
-        JScrollPane scrollPane = new JScrollPane(table);
+        //JScrollPane scrollPane = new JScrollPane(table);
+
+        JScrollPane scrollPane = new JScrollPane(table,
+                JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED,
+                JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
+        JScrollBar bar = scrollPane.getVerticalScrollBar();
+        bar.setPreferredSize(new Dimension(20, 0));
+
         add(scrollPane, BorderLayout.CENTER);
     }
 

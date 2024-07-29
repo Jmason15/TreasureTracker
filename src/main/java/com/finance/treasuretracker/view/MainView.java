@@ -19,7 +19,7 @@ public class MainView {
                                         SummaryController summaryController) {
         JFrame frame = new JFrame("Treasure Tracker");
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        frame.setMinimumSize(new Dimension(2000, 900));
+        frame.setMinimumSize(new Dimension(1500, 900));
         frame.pack();
 
         com.finance.treasuretracker.view.tabs.menu.Menu menu = new Menu();
