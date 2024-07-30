@@ -1,9 +1,11 @@
 package com.finance.treasuretracker.view.tabs.summary;
 
 import com.finance.treasuretracker.controller.SummaryController;
+import com.finance.treasuretracker.model.dto.BreakoutListDTO;
 import com.finance.treasuretracker.model.dto.SummaryViewDTO;
 import com.finance.treasuretracker.model.dto.SummaryViewInterface;
 import com.finance.treasuretracker.view.tabs.summary.enums.SummaryColumnEnum;
+import com.finance.treasuretracker.view.tabs.summary.enums.YearMonthTakehomeEnum;
 
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
@@ -18,6 +20,7 @@ import java.util.Objects;
 public class SummaryPanel extends JPanel {
 
     private DefaultTableModel summaryTableModel;
+    private DefaultTableModel actualYearMonthTableModel;
     private final SummaryController summaryController;
 
     public SummaryPanel(SummaryController summaryController) {
@@ -27,11 +30,19 @@ public class SummaryPanel extends JPanel {
     }
 
     private void initializeUi() {
+        actualYearMonthTableModel = new DefaultTableModel(YearMonthTakehomeEnum.getColumnNames(), 0);
+        JTable table2 = new JTable(actualYearMonthTableModel);
+
+        JScrollPane scrollPane2 = new JScrollPane(table2,
+                JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED,
+                JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
+        JScrollBar bar2 = scrollPane2.getVerticalScrollBar();
+        bar2.setPreferredSize(new Dimension(20, 0));
+
         summaryTableModel = new DefaultTableModel(SummaryColumnEnum.getColumnNames(), 0);
-        JTable table = new JTable(summaryTableModel);
         populateTableWithData();
 
-        //JScrollPane scrollPane = new JScrollPane(table);
+        JTable table = new JTable(summaryTableModel);
 
         JScrollPane scrollPane = new JScrollPane(table,
                 JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED,
@@ -39,7 +50,9 @@ public class SummaryPanel extends JPanel {
         JScrollBar bar = scrollPane.getVerticalScrollBar();
         bar.setPreferredSize(new Dimension(20, 0));
 
+        add(scrollPane2, BorderLayout.NORTH);
         add(scrollPane, BorderLayout.CENTER);
+
     }
 
     public void populateTableWithData() {
@@ -63,6 +76,22 @@ public class SummaryPanel extends JPanel {
         rowData.put(SummaryColumnEnum.AMOUNT_PAID, totalPaidForYear);
 
         summaryTableModel.addRow(rowData.values().toArray());
+
+
+        actualYearMonthTableModel.setRowCount(0);
+        List<BreakoutListDTO> breakoutList = summaryController.getBreakoutList();
+        for (BreakoutListDTO breakoutListDTO : breakoutList) {
+            Map<YearMonthTakehomeEnum, Object> rowData2 = new EnumMap<>(YearMonthTakehomeEnum.class);
+            rowData2.put(YearMonthTakehomeEnum.DESCRIPTION, breakoutListDTO.getDesctiption());
+            rowData2.put(YearMonthTakehomeEnum.TOTAL_YEAR, breakoutListDTO.getTotalYear());
+            rowData2.put(YearMonthTakehomeEnum.TOTAL_MONTH, breakoutListDTO.getTotalMonth());
+            rowData2.put(YearMonthTakehomeEnum.REM_YEAR, breakoutListDTO.getRemYear());
+            rowData2.put(YearMonthTakehomeEnum.REM_MONTH, breakoutListDTO.getRemMonth());
+            actualYearMonthTableModel.addRow(rowData2.values().toArray());
+        }
+
+
+
 
 
     }
