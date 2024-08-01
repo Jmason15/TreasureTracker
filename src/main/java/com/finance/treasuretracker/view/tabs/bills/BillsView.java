@@ -9,14 +9,15 @@ import com.finance.treasuretracker.controller.DropdownController;
 import com.finance.treasuretracker.model.Account;
 import com.finance.treasuretracker.model.Bill;
 import com.finance.treasuretracker.model.Dropdown;
+import com.finance.treasuretracker.model.HiddenCellRenderer;
 import com.finance.treasuretracker.view.tabs.bills.enums.BillColumnENUM;
 import com.finance.treasuretracker.view.tabs.bills.utils.BillButtonEditor;
 import com.finance.treasuretracker.view.tabs.utils.ButtonRenderer;
 import com.finance.treasuretracker.view.tabs.utils.ComboBoxItem;
 import org.jdesktop.swingx.JXDatePicker;
 
-import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
+import javax.swing.table.TableColumn;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.EnumMap;
@@ -57,7 +58,7 @@ public class BillsView extends JPanel {
         };
 
         // Populate table with data
-        populateTableWithData();
+        populateTableWithData(table);
 
         // Customize cell rendering to include buttons
         table.setDefaultRenderer(JButton.class, new ButtonRenderer());
@@ -72,7 +73,7 @@ public class BillsView extends JPanel {
         JButton addButton = new JButton("Add Bill");
         addButton.setBackground(new Color(0, 128, 0)); // Green color
         addButton.setForeground(Color.WHITE); // White text
-        addButton.addActionListener(e -> openAddBillForm(null));
+        addButton.addActionListener(e -> openAddBillForm(null, table));
         buttonPanel.add(addButton);
 
         JButton correctTransactionsButton = new JButton("Correct Transactions");
@@ -100,13 +101,13 @@ public class BillsView extends JPanel {
         // No additional action needed for the NO_OPTION as the dialog will simply close
     }
 
-    public void populateTableWithData() {
+    public void populateTableWithData(JTable table) {
         List<Bill> bills = billController.getAllBills();
         tableModel.setRowCount(0);
 
         for (Bill bill : bills) {
             Map<BillColumnENUM, Object> rowData = new EnumMap<>(BillColumnENUM.class);
-            //rowData.put(BillColumnENUM.ID, bill.getBillId());
+            rowData.put(BillColumnENUM.ID, bill.getBillId());
             rowData.put(BillColumnENUM.NAME, bill.getName());
             rowData.put(BillColumnENUM.DUE_DAY, bill.getDueDay());
             rowData.put(BillColumnENUM.FREQUENCY, bill.getFrequency().getDisplay());
@@ -119,9 +120,12 @@ public class BillsView extends JPanel {
 
             tableModel.addRow(rowData.values().toArray());
         }
+        // Hide the ID column
+        TableColumn idColumn = table.getColumnModel().getColumn(0);
+        idColumn.setCellRenderer(new HiddenCellRenderer());
     }
 
-    public void openAddBillForm(Bill bill) {
+    public void openAddBillForm(Bill bill, JTable table) {
         Bill toSaveOrUpdate = (bill != null) ? bill : new Bill(); // Create a new bill if bill is null
 
         // Create a dialog
@@ -252,7 +256,7 @@ public class BillsView extends JPanel {
                 dialog.dispose();
 
                 // Refresh the table or UI
-                populateTableWithData(); // You should implement this method to update the table
+                populateTableWithData(table); // You should implement this method to update the table
             } else {
                 JOptionPane.showMessageDialog(dialog, "Invalid frequency selected.", "Error", JOptionPane.ERROR_MESSAGE);
             }

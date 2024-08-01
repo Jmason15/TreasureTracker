@@ -5,7 +5,7 @@ import com.fasterxml.jackson.databind.util.EnumValues;
 import java.util.Arrays;
 
 public enum BillColumnENUM {
-    //ID("ID"),
+    ID("ID"),
     NAME("Name"),
     DUE_DAY("Due Day"),
     FREQUENCY("Frequency"),

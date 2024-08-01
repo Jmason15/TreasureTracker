@@ -18,7 +18,10 @@ import java.util.Map;
 import java.util.Objects;
 
 public class SummaryPanel extends JPanel {
-
+    private JPanel mainPanel;
+    private JPanel northPanel;
+    private JTable table;
+    private JTable table2;
     private DefaultTableModel summaryTableModel;
     private DefaultTableModel actualYearMonthTableModel;
     private final SummaryController summaryController;
@@ -32,7 +35,6 @@ public class SummaryPanel extends JPanel {
     private void initializeUi() {
         actualYearMonthTableModel = new DefaultTableModel(YearMonthTakehomeEnum.getColumnNames(), 0);
         JTable table2 = new JTable(actualYearMonthTableModel);
-
         JScrollPane scrollPane2 = new JScrollPane(table2,
                 JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED,
                 JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
@@ -43,15 +45,29 @@ public class SummaryPanel extends JPanel {
         populateTableWithData();
 
         JTable table = new JTable(summaryTableModel);
-
         JScrollPane scrollPane = new JScrollPane(table,
                 JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED,
                 JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
         JScrollBar bar = scrollPane.getVerticalScrollBar();
         bar.setPreferredSize(new Dimension(20, 0));
 
-        add(scrollPane2, BorderLayout.NORTH);
-        add(scrollPane, BorderLayout.CENTER);
+        JPanel centerPanel = new JPanel(new BorderLayout());
+        centerPanel.add(scrollPane2, BorderLayout.CENTER);
+
+        JPanel rightPanel = new JPanel(new BorderLayout());
+        rightPanel.add(scrollPane, BorderLayout.CENTER);
+
+        mainPanel = new JPanel();
+        mainPanel.setLayout(new BoxLayout(mainPanel, BoxLayout.Y_AXIS));
+        mainPanel.add(centerPanel);
+        mainPanel.add(rightPanel);
+
+
+        int height = 10 ;
+
+        centerPanel.setPreferredSize(new Dimension(centerPanel.getPreferredSize().width, 10));
+
+        add(mainPanel);
 
     }
 

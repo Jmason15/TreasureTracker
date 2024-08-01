@@ -29,43 +29,38 @@ public class BillButtonEditor extends DefaultCellEditor {
         public Component getTableCellEditorComponent(JTable table, Object value, boolean isSelected, int row, int column) {
             if ("Edit".equals(value)) {
                 int modelRow = table.convertRowIndexToModel(row);
-                Object billIdObj = table.getModel().getValueAt(modelRow, 0); // Retrieve the ID object
+                Object billIdObj = table.getModel().getValueAt(modelRow, 0);
 
-                Long billId = null;
-                if (billIdObj instanceof Integer) {
-                    // If it's an Integer, convert to Long
-                    billId = ((Integer) billIdObj).longValue();
-                } else if (billIdObj instanceof Long) {
-                    // If it's already a Long, cast directly
-                    billId = (Long) billIdObj;
-                } else {
-                    // Handle other unexpected types, perhaps log a warning or error
-                    System.err.println("Unexpected type for bill ID: " + billIdObj.getClass().getName());
-                }
-
-                // Fetch the bill by ID from your BillController
-                Bill bill = billController.getBillById(billId);
-                if (bill != null) {
-                    billsView.openAddBillForm(bill); // Open the form with the selected bill for editing
+                Long billId = getBillId(billIdObj);
+                if (billId != null) {
+                    Bill bill = billController.getBillById(billId);
+                    if (bill != null) {
+                        billsView.openAddBillForm(bill, table);
+                    }
                 }
             } else if ("Delete".equals(value)) {
                 int modelRow = table.convertRowIndexToModel(row);
-                Object billIdObj = table.getModel().getValueAt(modelRow, 0); // Retrieve the ID object
+                Object billIdObj = table.getModel().getValueAt(modelRow, 0);
 
-                Long billId;
-                if (billIdObj instanceof Long) {
-                    billId = (Long) billIdObj; // Cast to Integer
-                } else {
-                    throw new IllegalStateException("Bill ID is not of a recognized type");
+                Long billId = getBillId(billIdObj);
+                if (billId != null) {
+                    billController.deleteBill(billId);
+                    billsView.populateTableWithData(table);
                 }
-
-                // Delete the bill by ID from your BillController
-                billController.deleteBill(billId);
-                billsView.populateTableWithData(); // Refresh the table
             }
 
             return null;
         }
+    private Long getBillId(Object billIdObj) {
+        if (billIdObj instanceof Integer) {
+            return ((Integer) billIdObj).longValue();
+        } else if (billIdObj instanceof Long) {
+            return (Long) billIdObj;
+        } else {
+            System.err.println("Unexpected type for bill ID: " + billIdObj.getClass().getName());
+            return null;
+        }
+    }
     }
 
 
