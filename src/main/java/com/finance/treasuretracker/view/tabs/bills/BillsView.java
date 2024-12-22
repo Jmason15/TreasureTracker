@@ -26,9 +26,17 @@ import java.util.Map;
 
 public class BillsView extends JPanel {
 
-    private DefaultTableModel tableModel;
+    private DefaultTableModel recurringBillsTableModel;
+    private DefaultTableModel oneTimeBillsTableModel;
+    private DefaultTableModel recurringIncomeTableModel;
+    private DefaultTableModel oneTimeIncomeTableModel;
     private final BillController billController;
     private final DropdownController dropdownController;
+
+    private JTable recurringBillsTable;
+    private JTable oneTimeBillsTable;
+    private JTable recurringIncomeTable;
+    private JTable oneTimeIncomeTable;
 
     private final AccountController accountController;
 
@@ -41,8 +49,57 @@ public class BillsView extends JPanel {
     }
 
     private void initializeUI() {
-        // Table model
-        tableModel = new DefaultTableModel(BillColumnENUM.getColumnNames(), 0);
+        // Table models
+        recurringBillsTableModel = new DefaultTableModel(BillColumnENUM.getColumnNames(), 0);
+        oneTimeBillsTableModel = new DefaultTableModel(BillColumnENUM.getColumnNames(), 0);
+        recurringIncomeTableModel = new DefaultTableModel(BillColumnENUM.getColumnNames(), 0);
+        oneTimeIncomeTableModel = new DefaultTableModel(BillColumnENUM.getColumnNames(), 0);
+
+        recurringBillsTable = createTable(recurringBillsTableModel);
+        oneTimeBillsTable = createTable(oneTimeBillsTableModel);
+        recurringIncomeTable = createTable(recurringIncomeTableModel);
+        oneTimeIncomeTable = createTable(oneTimeIncomeTableModel);
+
+        // Hide the ID column in all tables
+        hideIdColumn(recurringBillsTable);
+        hideIdColumn(oneTimeBillsTable);
+        hideIdColumn(recurringIncomeTable);
+        hideIdColumn(oneTimeIncomeTable);
+
+        // Populate tables with data
+        populateTablesWithData();
+
+        // Create tabbed pane
+        JTabbedPane tabbedPane = new JTabbedPane();
+
+        // Add tables to tabbed pane
+        tabbedPane.addTab("Recurring Bills", new JScrollPane(recurringBillsTable));
+        tabbedPane.addTab("One-Time Bills", new JScrollPane(oneTimeBillsTable));
+        tabbedPane.addTab("Recurring Income", new JScrollPane(recurringIncomeTable));
+        tabbedPane.addTab("One-Time Income", new JScrollPane(oneTimeIncomeTable));
+
+        // Add tabbed pane to the UI
+        add(tabbedPane, BorderLayout.CENTER);
+
+        JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+
+        // Add button at the top
+        JButton addButton = new JButton("Add Bill");
+        addButton.setBackground(new Color(0, 128, 0)); // Green color
+        addButton.setForeground(Color.WHITE); // White text
+        addButton.addActionListener(e -> openAddBillForm(null));
+        buttonPanel.add(addButton);
+
+        JButton correctTransactionsButton = new JButton("Correct Transactions");
+        correctTransactionsButton.setBackground(new Color(0, 0, 255)); // Blue color
+        correctTransactionsButton.setForeground(Color.WHITE); // White text
+        correctTransactionsButton.addActionListener(e -> showConfirmationDialog());
+        buttonPanel.add(correctTransactionsButton);
+
+        add(buttonPanel, BorderLayout.NORTH);
+    }
+
+    private JTable createTable(DefaultTableModel tableModel) {
         JTable table = new JTable(tableModel) {
             @Override
             public Class<?> getColumnClass(int column) {
@@ -57,35 +114,11 @@ public class BillsView extends JPanel {
             }
         };
 
-        // Populate table with data
-        populateTableWithData(table);
-
         // Customize cell rendering to include buttons
         table.setDefaultRenderer(JButton.class, new ButtonRenderer());
         table.setDefaultEditor(JButton.class, new BillButtonEditor(new JCheckBox(), billController, this, table));
 
-        // Scroll pane
-        JScrollPane scrollPane = new JScrollPane(table);
-        add(scrollPane, BorderLayout.CENTER);
-        JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
-
-        // Add button at the top
-        JButton addButton = new JButton("Add Bill");
-        addButton.setBackground(new Color(0, 128, 0)); // Green color
-        addButton.setForeground(Color.WHITE); // White text
-        addButton.addActionListener(e -> openAddBillForm(null, table));
-        buttonPanel.add(addButton);
-
-        JButton correctTransactionsButton = new JButton("Correct Transactions");
-        correctTransactionsButton.setBackground(new Color(0, 0, 255)); // Blue color
-        correctTransactionsButton.setForeground(Color.WHITE); // White text
-        correctTransactionsButton.addActionListener(e -> showConfirmationDialog());
-        buttonPanel.add(correctTransactionsButton);
-
-        add(buttonPanel, BorderLayout.NORTH);
-
-        // Scroll pane
-        add(scrollPane, BorderLayout.CENTER);
+        return table;
     }
 
     private void showConfirmationDialog() {
@@ -101,9 +134,12 @@ public class BillsView extends JPanel {
         // No additional action needed for the NO_OPTION as the dialog will simply close
     }
 
-    public void populateTableWithData(JTable table) {
+    public void populateTablesWithData() {
         List<Bill> bills = billController.getAllBills();
-        tableModel.setRowCount(0);
+        recurringBillsTableModel.setRowCount(0);
+        oneTimeBillsTableModel.setRowCount(0);
+        recurringIncomeTableModel.setRowCount(0);
+        oneTimeIncomeTableModel.setRowCount(0);
 
         for (Bill bill : bills) {
             Map<BillColumnENUM, Object> rowData = new EnumMap<>(BillColumnENUM.class);
@@ -119,14 +155,37 @@ public class BillsView extends JPanel {
             rowData.put(BillColumnENUM.EDIT, "Edit");
             rowData.put(BillColumnENUM.DELETE, "Delete");
 
-            tableModel.addRow(rowData.values().toArray());
+            if (bill.getAmount() < 0) {
+                if (!bill.getFrequency().getValue().equals("365")) {
+                    recurringBillsTableModel.addRow(rowData.values().toArray());
+                } else {
+                    oneTimeBillsTableModel.addRow(rowData.values().toArray());
+                }
+            } else {
+                if (!bill.getFrequency().getValue().equals("365")) {
+                    recurringIncomeTableModel.addRow(rowData.values().toArray());
+                } else {
+                    oneTimeIncomeTableModel.addRow(rowData.values().toArray());
+                }
+            }
         }
-        // Hide the ID column
-        TableColumn idColumn = table.getColumnModel().getColumn(0);
-        idColumn.setCellRenderer(new HiddenCellRenderer());
+
+        // Hide the ID column in all tables
+        hideIdColumn(recurringBillsTable);
+        hideIdColumn(oneTimeBillsTable);
+        hideIdColumn(recurringIncomeTable);
+        hideIdColumn(oneTimeIncomeTable);
     }
 
-    public void openAddBillForm(Bill bill, JTable table) {
+    private void hideIdColumn(JTable table) {
+        TableColumn idColumn = table.getColumnModel().getColumn(0);
+        idColumn.setMinWidth(0);
+        idColumn.setMaxWidth(0);
+        idColumn.setPreferredWidth(0);
+        idColumn.setResizable(false);
+    }
+
+    public void openAddBillForm(Bill bill) {
         Bill toSaveOrUpdate = (bill != null) ? bill : new Bill(); // Create a new bill if bill is null
 
         // Create a dialog
@@ -154,7 +213,6 @@ public class BillsView extends JPanel {
         JLabel frequencyLabel = new JLabel("Frequency:");
         JComboBox<ComboBoxItem<Dropdown>> frequencyComboBox = new JComboBox<>();
 
-
         // Fetch the list of frequencies from the controller and add them to the combo box
         for (Dropdown frequency : dropdownController.getAllDropdownsbyType(2L)) {
             frequencyComboBox.addItem(new ComboBoxItem<>(frequency, frequency.getDisplay()));
@@ -165,7 +223,6 @@ public class BillsView extends JPanel {
         for (Account account : accountController.getAllAccounts()) {
             accountComboBox.addItem(new ComboBoxItem<>(account, account.getDisplayName()));
         }
-
 
         // Populate the fields if editing
         if (bill != null) {
@@ -226,8 +283,8 @@ public class BillsView extends JPanel {
             Date endDate = datePickerEndDate.getDate();
             Double amount = getaDouble(amountTextField);
             Double alternate = getaDouble(alternateTextField);
-            ComboBoxItem<Dropdown> selectedDropdown = (ComboBoxItem<Dropdown>)  frequencyComboBox.getSelectedItem();
-            ComboBoxItem<Account> accountDropdown = (ComboBoxItem<Account>)  accountComboBox.getSelectedItem();
+            ComboBoxItem<Dropdown> selectedDropdown = (ComboBoxItem<Dropdown>) frequencyComboBox.getSelectedItem();
+            ComboBoxItem<Account> accountDropdown = (ComboBoxItem<Account>) accountComboBox.getSelectedItem();
             Long selectedFrequencyId = null;
             Dropdown selectedFrequency = null;
 
@@ -237,14 +294,10 @@ public class BillsView extends JPanel {
             if (selectedDropdown != null) {
                 selectedFrequencyId = selectedDropdown.getItem().getDropdownId();
                 selectedFrequency = dropdownController.getDropdownById(selectedFrequencyId);
-                // Now you have the ID, you can use it as needed
-                // ...
             }
             if (accountDropdown != null) {
                 selectedAccountId = accountDropdown.getItem().getAccountId();
                 selectedAccount = accountController.getAccountById(selectedAccountId);
-                // Now you have the ID, you can use it as needed
-                // ...
             }
 
             if (selectedFrequency != null) {
@@ -257,15 +310,15 @@ public class BillsView extends JPanel {
                 toSaveOrUpdate.setAccount(selectedAccount);
 
                 if (bill == null) {
-                  billController.createBill(toSaveOrUpdate);
+                    billController.createBill(toSaveOrUpdate);
                 } else {
                     billController.updateBill(toSaveOrUpdate);
                 }
 
                 dialog.dispose();
 
-                // Refresh the table or UI
-                populateTableWithData(table); // You should implement this method to update the table
+                // Refresh the tables
+                populateTablesWithData();
             } else {
                 JOptionPane.showMessageDialog(dialog, "Invalid frequency selected.", "Error", JOptionPane.ERROR_MESSAGE);
             }
@@ -360,4 +413,20 @@ public class BillsView extends JPanel {
 //            return null;
 //        }
 //    }
+
+    public JTable getRecurringBillsTable() {
+        return recurringBillsTable;
+    }
+
+    public JTable getOneTimeBillsTable() {
+        return oneTimeBillsTable;
+    }
+
+    public JTable getRecurringIncomeTable() {
+        return recurringIncomeTable;
+    }
+
+    public JTable getOneTimeIncomeTable() {
+        return oneTimeIncomeTable;
+    }
 }

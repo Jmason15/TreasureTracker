@@ -25,32 +25,32 @@ public class BillButtonEditor extends DefaultCellEditor {
             deleteButton.addActionListener(e -> fireEditingStopped());
         }
 
-        @Override
-        public Component getTableCellEditorComponent(JTable table, Object value, boolean isSelected, int row, int column) {
-            if ("Edit".equals(value)) {
-                int modelRow = table.convertRowIndexToModel(row);
-                Object billIdObj = table.getModel().getValueAt(modelRow, 0);
+    @Override
+    public Component getTableCellEditorComponent(JTable table, Object value, boolean isSelected, int row, int column) {
+        if ("Edit".equals(value)) {
+            int modelRow = table.convertRowIndexToModel(row);
+            Object billIdObj = table.getModel().getValueAt(modelRow, 0);
 
-                Long billId = getBillId(billIdObj);
-                if (billId != null) {
-                    Bill bill = billController.getBillById(billId);
-                    if (bill != null) {
-                        billsView.openAddBillForm(bill, table);
-                    }
-                }
-            } else if ("Delete".equals(value)) {
-                int modelRow = table.convertRowIndexToModel(row);
-                Object billIdObj = table.getModel().getValueAt(modelRow, 0);
-
-                Long billId = getBillId(billIdObj);
-                if (billId != null) {
-                    billController.deleteBill(billId);
-                    billsView.populateTableWithData(table);
+            Long billId = getBillId(billIdObj);
+            if (billId != null) {
+                Bill bill = billController.getBillById(billId);
+                if (bill != null) {
+                    billsView.openAddBillForm(bill);
                 }
             }
+        } else if ("Delete".equals(value)) {
+            int modelRow = table.convertRowIndexToModel(row);
+            Object billIdObj = table.getModel().getValueAt(modelRow, 0);
 
-            return null;
+            Long billId = getBillId(billIdObj);
+            if (billId != null) {
+                billController.deleteBill(billId);
+                billsView.populateTablesWithData();
+            }
         }
+
+        return null;
+    }
     private Long getBillId(Object billIdObj) {
         if (billIdObj instanceof Integer) {
             return ((Integer) billIdObj).longValue();
