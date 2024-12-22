@@ -192,7 +192,6 @@ public class TransactionsPanel extends JPanel implements DataReloadListener {
         return null;
     }
 
-    // Method to refresh the table data (if needed)
     private void refreshTableData(List<TransactionGridInterface> transactions) {
         updateAccountBalances(transactions);
         tableModel.setRowCount(0); // Clear existing data
@@ -218,36 +217,44 @@ public class TransactionsPanel extends JPanel implements DataReloadListener {
             Integer year = entry.getKey();
             List<TransactionGridInterface> yearlyTransactions = entry.getValue();
 
+            // Filter out paid transactions if showPaidTransactions is false
+            List<TransactionGridInterface> filteredTransactions = yearlyTransactions.stream()
+                    .filter(transaction -> showPaidTransactions || !transaction.getPaid())
+                    .toList();
+
+            // Skip adding a row for the year if there are no transactions to show
+            if (filteredTransactions.isEmpty()) {
+                continue;
+            }
+
             // Add a row for the year
             tableModel.addRow(new Object[]{year.toString(), "", "", "", "", "", "", ""});
 
-            for (TransactionGridInterface transaction : yearlyTransactions) {
-                if (showPaidTransactions || !transaction.getPaid()) {
-                    Object[] row = new Object[columnNamesList.size()];
+            for (TransactionGridInterface transaction : filteredTransactions) {
+                Object[] row = new Object[columnNamesList.size()];
 
-                    // Set values for each column based on the transaction
-                    row[columnIndexMap.get("Paid")] = transaction.getPaid();
-                    row[columnIndexMap.get("Bill Name")] = transaction.getBillName();
-                    row[columnIndexMap.get("Amount")] = formatAsCurrency(transaction.getBillAmount() != null ? transaction.getBillAmount() : 0.0);
-                    row[columnIndexMap.get("Date")] = transaction.getTransactionDate();
-                    row[columnIndexMap.get("account")] = transaction.getAccountDisplayName();
-                    row[columnIndexMap.get("transactionId")] = transaction.getTransactionId();
-                    double total = 0.0;
+                // Set values for each column based on the transaction
+                row[columnIndexMap.get("Paid")] = transaction.getPaid();
+                row[columnIndexMap.get("Bill Name")] = transaction.getBillName();
+                row[columnIndexMap.get("Amount")] = formatAsCurrency(transaction.getBillAmount() != null ? transaction.getBillAmount() : 0.0);
+                row[columnIndexMap.get("Date")] = transaction.getTransactionDate();
+                row[columnIndexMap.get("account")] = transaction.getAccountDisplayName();
+                row[columnIndexMap.get("transactionId")] = transaction.getTransactionId();
+                double total = 0.0;
 
-                    // Handle dynamic balance columns
-                    for (String balanceColumnName : balanceColumnNames) {
-                        Double currentBalance = accountBalances.get(balanceColumnName);
-                        if (Objects.equals(balanceColumnName, transaction.getAccountDisplayName() + " Balance") && !transaction.getPaid()) {
-                            currentBalance += transaction.getBillAmount() != null ? transaction.getBillAmount() : 0.0;
-                            accountBalances.put(balanceColumnName, currentBalance);
-                        }
-                        row[columnIndexMap.get(balanceColumnName)] = formatAsCurrency(accountBalances.getOrDefault(balanceColumnName, 0.0));
-                        total += accountBalances.getOrDefault(balanceColumnName, 0.0);
+                // Handle dynamic balance columns
+                for (String balanceColumnName : balanceColumnNames) {
+                    Double currentBalance = accountBalances.get(balanceColumnName);
+                    if (Objects.equals(balanceColumnName, transaction.getAccountDisplayName() + " Balance") && !transaction.getPaid()) {
+                        currentBalance += transaction.getBillAmount() != null ? transaction.getBillAmount() : 0.0;
+                        accountBalances.put(balanceColumnName, currentBalance);
                     }
-
-                    row[columnIndexMap.get("Total")] = formatAsCurrency(total);
-                    tableModel.addRow(row);
+                    row[columnIndexMap.get(balanceColumnName)] = formatAsCurrency(accountBalances.getOrDefault(balanceColumnName, 0.0));
+                    total += accountBalances.getOrDefault(balanceColumnName, 0.0);
                 }
+
+                row[columnIndexMap.get("Total")] = formatAsCurrency(total);
+                tableModel.addRow(row);
             }
         }
 
