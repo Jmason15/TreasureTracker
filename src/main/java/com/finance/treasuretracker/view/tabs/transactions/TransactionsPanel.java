@@ -9,6 +9,7 @@ import com.finance.treasuretracker.model.dto.TransactionGridInterface;
 import com.finance.treasuretracker.utils.CurrencyCellRenderer;
 import com.finance.treasuretracker.utils.DataReloadListener;
 import com.finance.treasuretracker.view.tabs.transactions.callRenderers.BelowThresholdRedHighlighter;
+import com.finance.treasuretracker.view.tabs.transactions.callRenderers.DueDateHighlighter;
 
 import javax.swing.*;
 import javax.swing.event.TableModelEvent;
@@ -115,6 +116,10 @@ public class TransactionsPanel extends JPanel implements DataReloadListener {
                 }
             }
         });
+
+        // Apply the custom renderer to the "Date" column
+        int dateColumnIndex = tableModel.findColumn("Date");
+        transactionsTable.getColumnModel().getColumn(dateColumnIndex).setCellRenderer(new DueDateHighlighter());
 
         // Add a listener to hide rows when the checkbox is clicked
         transactionsTable.getModel().addTableModelListener(e -> {
