@@ -10,6 +10,7 @@ import com.finance.treasuretracker.utils.CurrencyCellRenderer;
 import com.finance.treasuretracker.utils.DataReloadListener;
 import com.finance.treasuretracker.view.tabs.transactions.callRenderers.BelowThresholdRedHighlighter;
 import com.finance.treasuretracker.view.tabs.transactions.callRenderers.DueDateHighlighter;
+import com.finance.treasuretracker.view.tabs.transactions.callRenderers.YearRowRenderer;
 
 import javax.swing.*;
 import javax.swing.event.TableModelEvent;
@@ -17,6 +18,7 @@ import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumnModel;
 import java.awt.*;
+import java.time.LocalDate;
 import java.util.*;
 import java.util.List;
 import java.text.NumberFormat;
@@ -139,7 +141,10 @@ public class TransactionsPanel extends JPanel implements DataReloadListener {
             }
         });
         transactionsTable.setDefaultRenderer(Double.class, new CurrencyCellRenderer());
-// Assuming 'transactionsTable' is your JTable and 'tableModel' is the DefaultTableModel
+
+        transactionsTable.setDefaultRenderer(Object.class, new YearRowRenderer());
+
+        // Assuming 'transactionsTable' is your JTable and 'tableModel' is the DefaultTableModel
         TableColumnModel columnModel = transactionsTable.getColumnModel();
         BelowThresholdRedHighlighter totalColumnRenderer = new BelowThresholdRedHighlighter();
         int totalColumnIndex = tableModel.findColumn("Total");
@@ -205,30 +210,42 @@ public class TransactionsPanel extends JPanel implements DataReloadListener {
         // Sort transactions by date
         transactions.sort(Comparator.comparing(TransactionGridInterface::getTransactionDate));
 
-        // Group transactions by year
-        Map<Integer, List<TransactionGridInterface>> transactionsByYear = transactions.stream()
+        // Group transactions by year and month
+        Map<String, List<TransactionGridInterface>> transactionsByMonth = transactions.stream()
                 .collect(Collectors.groupingBy(transaction -> {
                     Calendar calendar = Calendar.getInstance();
                     calendar.setTime(transaction.getTransactionDate());
-                    return calendar.get(Calendar.YEAR);
+                    int year = calendar.get(Calendar.YEAR);
+                    int month = calendar.get(Calendar.MONTH) + 1; // Months are 0-based in Calendar
+                    return year + "-" + String.format("%02d", month);
                 }));
 
-        for (Map.Entry<Integer, List<TransactionGridInterface>> entry : transactionsByYear.entrySet()) {
-            Integer year = entry.getKey();
-            List<TransactionGridInterface> yearlyTransactions = entry.getValue();
+        // Sort the map entries by year and month
+        List<Map.Entry<String, List<TransactionGridInterface>>> sortedEntries = new ArrayList<>(transactionsByMonth.entrySet());
+        sortedEntries.sort(Comparator.comparing(entry -> {
+            String[] parts = entry.getKey().split("-");
+            int year = Integer.parseInt(parts[0]);
+            int month = Integer.parseInt(parts[1]);
+            return LocalDate.of(year, month, 1);
+        }));
+
+        for (Map.Entry<String, List<TransactionGridInterface>> entry : sortedEntries) {
+            String yearMonth = entry.getKey();
+            List<TransactionGridInterface> monthlyTransactions = entry.getValue();
 
             // Filter out paid transactions if showPaidTransactions is false
-            List<TransactionGridInterface> filteredTransactions = yearlyTransactions.stream()
+            List<TransactionGridInterface> filteredTransactions = monthlyTransactions.stream()
                     .filter(transaction -> showPaidTransactions || !transaction.getPaid())
+                    .sorted(Comparator.comparing(TransactionGridInterface::getTransactionDate)) // Sort filtered transactions by date
                     .toList();
 
-            // Skip adding a row for the year if there are no transactions to show
+            // Skip adding a row for the month if there are no transactions to show
             if (filteredTransactions.isEmpty()) {
                 continue;
             }
 
-            // Add a row for the year
-            tableModel.addRow(new Object[]{year.toString(), "", "", "", "", "", "", ""});
+            // Add a row for the month
+            tableModel.addRow(new Object[]{yearMonth, "", "", "", "", "", "", ""});
 
             for (TransactionGridInterface transaction : filteredTransactions) {
                 Object[] row = new Object[columnNamesList.size()];
