@@ -42,39 +42,35 @@ public class SummaryServiceImpl implements SummaryServiceInterface{
     public List<BreakoutListDTO> getBreakoutList() {
         BreakoutListInterface toReturn = summaryRepository.findBreakoutList();
         List<BreakoutListDTO> toReturnList = new ArrayList<>();
+
         BreakoutListDTO income = new BreakoutListDTO();
         income.setDesctiption("Income");
         income.setTotalYear(toReturn.getTotalIncomeYear());
-        income.setTotalMonth(toReturn.getTotalIncomeYear()
-                .divide(BigDecimal.valueOf(12), 2, RoundingMode.HALF_UP) );
+        income.setTotalMonth(toReturn.getTotalIncomeYear() != null ?
+                toReturn.getTotalIncomeYear().divide(BigDecimal.valueOf(12), 2, RoundingMode.HALF_UP) : BigDecimal.ZERO);
         income.setRemYear(toReturn.getRemIncomeYear());
-        income.setRemMonth(toReturn.getRemIncomeYear()
-                .divide(BigDecimal.valueOf(12), 2, RoundingMode.HALF_UP) );
-
-
+        income.setRemMonth(toReturn.getRemIncomeYear() != null ?
+                toReturn.getRemIncomeYear().divide(BigDecimal.valueOf(12), 2, RoundingMode.HALF_UP) : BigDecimal.ZERO);
 
         BreakoutListDTO bill = new BreakoutListDTO();
         bill.setDesctiption("Bills");
         bill.setTotalYear(toReturn.getTotalBillYear());
-        bill.setTotalMonth(toReturn.getTotalBillYear()
-                .divide(BigDecimal.valueOf(12), 2, RoundingMode.HALF_UP) );
+        bill.setTotalMonth(toReturn.getTotalBillYear() != null ?
+                toReturn.getTotalBillYear().divide(BigDecimal.valueOf(12), 2, RoundingMode.HALF_UP) : BigDecimal.ZERO);
         bill.setRemYear(toReturn.getRemBillYear());
-        bill.setRemMonth(toReturn.getRemBillYear()
-                .divide(BigDecimal.valueOf(12), 2, RoundingMode.HALF_UP) );
-
+        bill.setRemMonth(toReturn.getRemBillYear() != null ?
+                toReturn.getRemBillYear().divide(BigDecimal.valueOf(12), 2, RoundingMode.HALF_UP) : BigDecimal.ZERO);
 
         BreakoutListDTO takeHome = new BreakoutListDTO();
         takeHome.setDesctiption("Take Home");
-        takeHome.setTotalYear(toReturn.getTotalIncomeYear()
-                .add(toReturn.getTotalBillYear()));
-        takeHome.setTotalMonth(toReturn.getTotalIncomeYear()
-                .add(toReturn.getTotalBillYear())
-                .divide(BigDecimal.valueOf(12), 2, RoundingMode.HALF_UP) );
-        takeHome.setRemYear(toReturn.getRemIncomeYear()
-                .add(toReturn.getRemBillYear()));
-        takeHome.setRemMonth(toReturn.getRemIncomeYear()
-                .add(toReturn.getRemBillYear())
-                .divide(BigDecimal.valueOf(12), 2, RoundingMode.HALF_UP) );
+        takeHome.setTotalYear(toReturn.getTotalIncomeYear() != null && toReturn.getTotalBillYear() != null ?
+                toReturn.getTotalIncomeYear().add(toReturn.getTotalBillYear()) : BigDecimal.ZERO);
+        takeHome.setTotalMonth(toReturn.getTotalIncomeYear() != null && toReturn.getTotalBillYear() != null ?
+                toReturn.getTotalIncomeYear().add(toReturn.getTotalBillYear()).divide(BigDecimal.valueOf(12), 2, RoundingMode.HALF_UP) : BigDecimal.ZERO);
+        takeHome.setRemYear(toReturn.getRemIncomeYear() != null && toReturn.getRemBillYear() != null ?
+                toReturn.getRemIncomeYear().add(toReturn.getRemBillYear()) : BigDecimal.ZERO);
+        takeHome.setRemMonth(toReturn.getRemIncomeYear() != null && toReturn.getRemBillYear() != null ?
+                toReturn.getRemIncomeYear().add(toReturn.getRemBillYear()).divide(BigDecimal.valueOf(12), 2, RoundingMode.HALF_UP) : BigDecimal.ZERO);
 
         toReturnList.add(income);
         toReturnList.add(bill);
