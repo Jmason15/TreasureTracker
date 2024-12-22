@@ -213,35 +213,27 @@ public class TransactionsPanel extends JPanel implements DataReloadListener {
                 // Assume the balance column names are stored in a list/set
                 for (String balanceColumnName : balanceColumnNames) {
                     Double currentBalance = accountBalances.get(balanceColumnName);
-                    if (Objects.equals(balanceColumnName, transaction.getAccountDisplayName() + " Balance")
-                            && !transaction.getPaid()) {
-                        currentBalance += transaction.getBillAmount() != null ? transaction.getBillAmount() : 0.0; // Assuming bill amount is subtracted from balance
+                    if (Objects.equals(balanceColumnName, transaction.getAccountDisplayName() + " Balance") && !transaction.getPaid()) {
+                        currentBalance += transaction.getBillAmount() != null ? transaction.getBillAmount() : 0.0;
                         accountBalances.put(balanceColumnName, currentBalance);
                     }
-                    row[columnIndexMap.get(balanceColumnName)] = accountBalances.getOrDefault(balanceColumnName, 0.0);
+                    row[columnIndexMap.get(balanceColumnName)] = formatAsCurrency(accountBalances.getOrDefault(balanceColumnName, 0.0));
                     total += accountBalances.getOrDefault(balanceColumnName, 0.0);
                 }
 
-                row[columnIndexMap.get("Total")] = total;
+                row[columnIndexMap.get("Total")] = formatAsCurrency(total);
                 tableModel.addRow(row);
             }
         }
-        // Assuming 'tableModel' is your DefaultTableModel
-        double lowestInAccount = Double.MAX_VALUE; // Initialize to a very high value
+        double lowestInAccount = Double.MAX_VALUE;
 
-        // Loop through the table model in reverse
         for (int i = tableModel.getRowCount() - 1; i >= 0; i--) {
-            // Assuming the 'Total' is stored in a specific column, let's say the last column
-            double total = (Double) tableModel.getValueAt(i, columnIndexMap.get("Total"));
-
-            // Update the lowest value encountered so far
+            String totalStr = tableModel.getValueAt(i, columnIndexMap.get("Total")).toString().replaceAll("[^\\d.-]", "");
+            double total = Double.parseDouble(totalStr);
             if (total < lowestInAccount) {
                 lowestInAccount = total;
             }
-
-            // Update the 'Lowest In Account' value for the current row
-            // Assuming 'Lowest In Account' is in a specific column, for example, second last
-            tableModel.setValueAt(lowestInAccount, i, columnIndexMap.get("Lowest In Account"));
+            tableModel.setValueAt(formatAsCurrency(lowestInAccount), i, columnIndexMap.get("Lowest In Account"));
         }
     }
     private void updateAccountBalances(List<TransactionGridInterface> transactions) {
@@ -255,7 +247,8 @@ public class TransactionsPanel extends JPanel implements DataReloadListener {
 
     private String formatAsCurrency(double amount) {
         NumberFormat currencyFormat = NumberFormat.getCurrencyInstance();
-        return currencyFormat.format(amount);
+        currencyFormat.setMaximumFractionDigits(0); // Set to 0 to display whole dollar amounts
+        return currencyFormat.format(Math.round(amount)); // Round the amount to the nearest integer
     }
 
     public void reloadData() {
@@ -281,5 +274,7 @@ public class TransactionsPanel extends JPanel implements DataReloadListener {
         // Refresh the table with new data
         refreshTableData(newTransactions);
     }
+
+
 }
 
