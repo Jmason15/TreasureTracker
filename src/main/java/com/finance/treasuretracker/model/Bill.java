@@ -21,6 +21,7 @@ public class Bill {
 
     private String name;
     private Date dueDay;
+    private Date endDate;
     private Double amount;
     private Double alternate;
 

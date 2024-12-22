@@ -1,13 +1,16 @@
 package com.finance.treasuretracker.view.tabs.bills.enums;
 
 import com.fasterxml.jackson.databind.util.EnumValues;
+import lombok.Getter;
 
 import java.util.Arrays;
 
+@Getter
 public enum BillColumnENUM {
     ID("ID"),
     NAME("Name"),
-    DUE_DAY("Due Day"),
+    DUE_DAY("Start Date"),
+    END_DATE("End Date"),
     FREQUENCY("Frequency"),
     ACCOUNT("Account"),
     BANK("Bank"),
@@ -20,10 +23,6 @@ public enum BillColumnENUM {
 
     BillColumnENUM(String columnName) {
         this.columnName = columnName;
-    }
-
-    public String getColumnName() {
-        return columnName;
     }
 
     public static String[] getColumnNames() {

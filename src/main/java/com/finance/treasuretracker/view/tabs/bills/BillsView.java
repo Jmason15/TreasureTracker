@@ -110,6 +110,7 @@ public class BillsView extends JPanel {
             rowData.put(BillColumnENUM.ID, bill.getBillId());
             rowData.put(BillColumnENUM.NAME, bill.getName());
             rowData.put(BillColumnENUM.DUE_DAY, bill.getDueDay());
+            rowData.put(BillColumnENUM.END_DATE, bill.getEndDate());
             rowData.put(BillColumnENUM.FREQUENCY, bill.getFrequency().getDisplay());
             rowData.put(BillColumnENUM.ACCOUNT, (bill.getAccount() != null) ? bill.getAccount().getDisplayName() : "N/A");
             rowData.put(BillColumnENUM.BANK, (bill.getAccount() != null && bill.getAccount().getBank() != null) ? bill.getAccount().getBank().getName() : "N/A");
@@ -137,10 +138,13 @@ public class BillsView extends JPanel {
         JPanel formPanel = new JPanel(new GridLayout(0, 2));
         JLabel nameLabel = new JLabel("Name:");
         JTextField nameTextField = new JTextField();
-        JXDatePicker datePicker = new JXDatePicker();
-        datePicker.setFormats(new SimpleDateFormat("dd/MM/yyyy"));
+        JXDatePicker datePickerStartDate = new JXDatePicker();
+        JXDatePicker datePickerEndDate = new JXDatePicker();
+        datePickerStartDate.setFormats(new SimpleDateFormat("dd/MM/yyyy"));
+        datePickerEndDate.setFormats(new SimpleDateFormat("dd/MM/yyyy"));
 
-        JLabel dueDayLabel = new JLabel("Due Day:");
+        JLabel dueDayLabel = new JLabel(BillColumnENUM.DUE_DAY.getColumnName());
+        JLabel endDayLabel = new JLabel(BillColumnENUM.END_DATE.getColumnName());
         JLabel amountLabel = new JLabel("Amount:");
         JTextField amountTextField = new JTextField();
         JLabel alternateLabel = new JLabel("Alternate Amount:");
@@ -166,7 +170,8 @@ public class BillsView extends JPanel {
         // Populate the fields if editing
         if (bill != null) {
             nameTextField.setText(bill.getName());
-            datePicker.setDate(bill.getDueDay());
+            datePickerStartDate.setDate(bill.getDueDay());
+            datePickerEndDate.setDate(bill.getEndDate());
             amountTextField.setText(bill.getAmount().toString());
             alternateTextField.setText(bill.getAlternate() != null ? bill.getAlternate().toString() : "");
 
@@ -191,7 +196,9 @@ public class BillsView extends JPanel {
         formPanel.add(nameLabel);
         formPanel.add(nameTextField);
         formPanel.add(dueDayLabel);
-        formPanel.add(datePicker);
+        formPanel.add(datePickerStartDate);
+        formPanel.add(endDayLabel);
+        formPanel.add(datePickerEndDate);
         formPanel.add(amountLabel);
         formPanel.add(amountTextField);
         formPanel.add(alternateLabel);
@@ -215,7 +222,8 @@ public class BillsView extends JPanel {
         // Save button action
         saveButton.addActionListener(e -> {
             String name = nameTextField.getText();
-            Date dueDate = datePicker.getDate();
+            Date dueDate = datePickerStartDate.getDate();
+            Date endDate = datePickerEndDate.getDate();
             Double amount = getaDouble(amountTextField);
             Double alternate = getaDouble(alternateTextField);
             ComboBoxItem<Dropdown> selectedDropdown = (ComboBoxItem<Dropdown>)  frequencyComboBox.getSelectedItem();
@@ -242,6 +250,7 @@ public class BillsView extends JPanel {
             if (selectedFrequency != null) {
                 toSaveOrUpdate.setName(name);
                 toSaveOrUpdate.setDueDay(dueDate);
+                toSaveOrUpdate.setEndDate(endDate);
                 toSaveOrUpdate.setAmount(amount);
                 toSaveOrUpdate.setAlternate(alternate);
                 toSaveOrUpdate.setFrequency(selectedFrequency);

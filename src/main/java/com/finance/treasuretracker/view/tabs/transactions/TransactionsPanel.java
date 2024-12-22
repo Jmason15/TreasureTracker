@@ -204,7 +204,7 @@ public class TransactionsPanel extends JPanel implements DataReloadListener {
                 // Set values for each column based on the transaction
                 row[columnIndexMap.get("Paid")] = transaction.getPaid();
                 row[columnIndexMap.get("Bill Name")] = transaction.getBillName();
-                row[columnIndexMap.get("Amount")] = formatAsCurrency(transaction.getBillAmount());
+                row[columnIndexMap.get("Amount")] = formatAsCurrency(transaction.getBillAmount() != null ? transaction.getBillAmount() : 0.0);
                 row[columnIndexMap.get("Date")] = transaction.getTransactionDate();
                 row[columnIndexMap.get("account")] = transaction.getAccountDisplayName();
                 row[columnIndexMap.get("transactionId")] = transaction.getTransactionId();
@@ -213,24 +213,23 @@ public class TransactionsPanel extends JPanel implements DataReloadListener {
                 // Assume the balance column names are stored in a list/set
                 for (String balanceColumnName : balanceColumnNames) {
                     Double currentBalance = accountBalances.get(balanceColumnName);
-                    if(Objects.equals(balanceColumnName, transaction.getAccountDisplayName() + " Balance")
-                      && !transaction.getPaid()) {
-                            currentBalance += transaction.getBillAmount(); // Assuming bill amount is subtracted from balance
-                            accountBalances.put(balanceColumnName, currentBalance);
+                    if (Objects.equals(balanceColumnName, transaction.getAccountDisplayName() + " Balance")
+                            && !transaction.getPaid()) {
+                        currentBalance += transaction.getBillAmount() != null ? transaction.getBillAmount() : 0.0; // Assuming bill amount is subtracted from balance
+                        accountBalances.put(balanceColumnName, currentBalance);
                     }
                     row[columnIndexMap.get(balanceColumnName)] = accountBalances.getOrDefault(balanceColumnName, 0.0);
                     total += accountBalances.getOrDefault(balanceColumnName, 0.0);
                 }
 
                 row[columnIndexMap.get("Total")] = total;
-//                row[columnIndexMap.get("Lowest In Account")] = lowestInAccount;
                 tableModel.addRow(row);
             }
         }
         // Assuming 'tableModel' is your DefaultTableModel
         double lowestInAccount = Double.MAX_VALUE; // Initialize to a very high value
 
-// Loop through the table model in reverse
+        // Loop through the table model in reverse
         for (int i = tableModel.getRowCount() - 1; i >= 0; i--) {
             // Assuming the 'Total' is stored in a specific column, let's say the last column
             double total = (Double) tableModel.getValueAt(i, columnIndexMap.get("Total"));

@@ -31,6 +31,7 @@ public class MainView {
         tabbedPane.addTab("Bills", new BillsView(billController, dropdownController, accountController));
         tabbedPane.addTab("Banks", new BanksView(bankController)); // Pass the controller here
         tabbedPane.addTab("Accounts", new AccountsView(accountController, bankController, dropdownController, dropdownTypeController));
+        
 
         tabbedPane.addChangeListener(e -> {
             if (tabbedPane.getSelectedComponent() instanceof TransactionsPanel) {
