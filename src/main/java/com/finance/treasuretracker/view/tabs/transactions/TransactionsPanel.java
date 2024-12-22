@@ -19,6 +19,7 @@ import java.awt.*;
 import java.util.*;
 import java.util.List;
 import java.text.NumberFormat;
+import java.util.stream.Collectors;
 
 public class TransactionsPanel extends JPanel implements DataReloadListener {
     private final JTable transactionsTable;
@@ -104,12 +105,14 @@ public class TransactionsPanel extends JPanel implements DataReloadListener {
         transactionsTable.setDefaultRenderer(Boolean.class, new TableCellRenderer() {
             @Override
             public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
-                JCheckBox checkBox = new JCheckBox();
-                if (value != null) {
+                if (value instanceof Boolean) {
+                    JCheckBox checkBox = new JCheckBox();
                     checkBox.setSelected((Boolean) value);
+                    checkBox.setHorizontalAlignment(JLabel.CENTER);
+                    return checkBox;
+                } else {
+                    return new JLabel(value != null ? value.toString() : "");
                 }
-                checkBox.setHorizontalAlignment(JLabel.CENTER);
-                return checkBox;
             }
         });
 
@@ -185,7 +188,7 @@ public class TransactionsPanel extends JPanel implements DataReloadListener {
     }
 
     // Method to refresh the table data (if needed)
-    public void refreshTableData(List<TransactionGridInterface> transactions) {
+    private void refreshTableData(List<TransactionGridInterface> transactions) {
         updateAccountBalances(transactions);
         tableModel.setRowCount(0); // Clear existing data
 
@@ -194,46 +197,65 @@ public class TransactionsPanel extends JPanel implements DataReloadListener {
         for (int i = 0; i < columnNamesList.size(); i++) {
             columnIndexMap.put(columnNamesList.get(i), i);
         }
-        boolean firstAccount = true;
 
+        // Sort transactions by date
         transactions.sort(Comparator.comparing(TransactionGridInterface::getTransactionDate));
-        for (TransactionGridInterface transaction : transactions) {
-            if (showPaidTransactions || !transaction.getPaid()) {
-                Object[] row = new Object[columnNamesList.size()];
 
-                // Set values for each column based on the transaction
-                row[columnIndexMap.get("Paid")] = transaction.getPaid();
-                row[columnIndexMap.get("Bill Name")] = transaction.getBillName();
-                row[columnIndexMap.get("Amount")] = formatAsCurrency(transaction.getBillAmount() != null ? transaction.getBillAmount() : 0.0);
-                row[columnIndexMap.get("Date")] = transaction.getTransactionDate();
-                row[columnIndexMap.get("account")] = transaction.getAccountDisplayName();
-                row[columnIndexMap.get("transactionId")] = transaction.getTransactionId();
-                double total = 0.0;
-                // Handle dynamic balance columns
-                // Assume the balance column names are stored in a list/set
-                for (String balanceColumnName : balanceColumnNames) {
-                    Double currentBalance = accountBalances.get(balanceColumnName);
-                    if (Objects.equals(balanceColumnName, transaction.getAccountDisplayName() + " Balance") && !transaction.getPaid()) {
-                        currentBalance += transaction.getBillAmount() != null ? transaction.getBillAmount() : 0.0;
-                        accountBalances.put(balanceColumnName, currentBalance);
+        // Group transactions by year
+        Map<Integer, List<TransactionGridInterface>> transactionsByYear = transactions.stream()
+                .collect(Collectors.groupingBy(transaction -> {
+                    Calendar calendar = Calendar.getInstance();
+                    calendar.setTime(transaction.getTransactionDate());
+                    return calendar.get(Calendar.YEAR);
+                }));
+
+        for (Map.Entry<Integer, List<TransactionGridInterface>> entry : transactionsByYear.entrySet()) {
+            Integer year = entry.getKey();
+            List<TransactionGridInterface> yearlyTransactions = entry.getValue();
+
+            // Add a row for the year
+            tableModel.addRow(new Object[]{year.toString(), "", "", "", "", "", "", ""});
+
+            for (TransactionGridInterface transaction : yearlyTransactions) {
+                if (showPaidTransactions || !transaction.getPaid()) {
+                    Object[] row = new Object[columnNamesList.size()];
+
+                    // Set values for each column based on the transaction
+                    row[columnIndexMap.get("Paid")] = transaction.getPaid();
+                    row[columnIndexMap.get("Bill Name")] = transaction.getBillName();
+                    row[columnIndexMap.get("Amount")] = formatAsCurrency(transaction.getBillAmount() != null ? transaction.getBillAmount() : 0.0);
+                    row[columnIndexMap.get("Date")] = transaction.getTransactionDate();
+                    row[columnIndexMap.get("account")] = transaction.getAccountDisplayName();
+                    row[columnIndexMap.get("transactionId")] = transaction.getTransactionId();
+                    double total = 0.0;
+
+                    // Handle dynamic balance columns
+                    for (String balanceColumnName : balanceColumnNames) {
+                        Double currentBalance = accountBalances.get(balanceColumnName);
+                        if (Objects.equals(balanceColumnName, transaction.getAccountDisplayName() + " Balance") && !transaction.getPaid()) {
+                            currentBalance += transaction.getBillAmount() != null ? transaction.getBillAmount() : 0.0;
+                            accountBalances.put(balanceColumnName, currentBalance);
+                        }
+                        row[columnIndexMap.get(balanceColumnName)] = formatAsCurrency(accountBalances.getOrDefault(balanceColumnName, 0.0));
+                        total += accountBalances.getOrDefault(balanceColumnName, 0.0);
                     }
-                    row[columnIndexMap.get(balanceColumnName)] = formatAsCurrency(accountBalances.getOrDefault(balanceColumnName, 0.0));
-                    total += accountBalances.getOrDefault(balanceColumnName, 0.0);
-                }
 
-                row[columnIndexMap.get("Total")] = formatAsCurrency(total);
-                tableModel.addRow(row);
+                    row[columnIndexMap.get("Total")] = formatAsCurrency(total);
+                    tableModel.addRow(row);
+                }
             }
         }
-        double lowestInAccount = Double.MAX_VALUE;
 
+        double lowestInAccount = Double.MAX_VALUE;
         for (int i = tableModel.getRowCount() - 1; i >= 0; i--) {
             String totalStr = tableModel.getValueAt(i, columnIndexMap.get("Total")).toString().replaceAll("[^\\d.-]", "");
-            double total = Double.parseDouble(totalStr);
-            if (total < lowestInAccount) {
-                lowestInAccount = total;
+            if (!totalStr.isEmpty()) {
+                double total = Double.parseDouble(totalStr);
+                if (total < lowestInAccount) {
+                    lowestInAccount = total;
+                }
+                tableModel.setValueAt(formatAsCurrency(lowestInAccount), i, columnIndexMap.get("Lowest In Account"));
             }
-            tableModel.setValueAt(formatAsCurrency(lowestInAccount), i, columnIndexMap.get("Lowest In Account"));
         }
     }
     private void updateAccountBalances(List<TransactionGridInterface> transactions) {

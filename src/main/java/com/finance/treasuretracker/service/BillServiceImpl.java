@@ -72,57 +72,58 @@ public class BillServiceImpl implements BillServiceInterface {
         Date lastDayOfNextYear = calendar.getTime();
 
         List<Transaction> transactionsToSave = new ArrayList<>();
+        try {
+            for (Bill bill : listOfBills) {
+                int dropdownId = bill.getFrequency().getDropdownId().intValue();
+                Date nextDate = bill.getDueDay();
+                Date endDate = bill.getEndDate() != null ? bill.getEndDate() : lastDayOfNextYear;
 
-        for (Bill bill : listOfBills) {
-            int dropdownId = bill.getFrequency().getDropdownId().intValue();
-            Date nextDate = bill.getDueDay();
-            Date endDate = bill.getEndDate() != null ? bill.getEndDate() : lastDayOfNextYear;
+                while (!nextDate.after(endDate)) {
+                    calendar.setTime(nextDate);
+                    switch (dropdownId) {
+                        case 3: // Monthly
+                            calendar.add(Calendar.MONTH, 1);
+                            break;
+                        case 7: // Bi-weekly
+                            calendar.add(Calendar.WEEK_OF_YEAR, 2);
+                            break;
+                        case 8: // Every Six Months
+                            calendar.add(Calendar.MONTH, 6);
+                            break;
+                        case 9: // Every Two Months
+                            calendar.add(Calendar.MONTH, 2);
+                            break;
+                        case 10: // Every Three Months
+                            calendar.add(Calendar.MONTH, 3);
+                            break;
+                        case 11: // Yearly
+                            calendar.add(Calendar.YEAR, 1);
+                            break;
+                        case 12: // One time
+                            break;
+                        default:
+                            System.out.println("Unsupported frequency for bill ID: " + bill.getBillId());
+                            break;
+                    }
+                    nextDate = calendar.getTime();
+                    if (!nextDate.after(endDate)) {
+                        Transaction toAdd = createTransaction(bill, nextDate);
+                        boolean transactionExists = listOfCurrentPaidTransactions.stream()
+                                .anyMatch(t -> t.getDate().equals(toAdd.getDate()) && t.getBill() != null && t.getBill().equals(bill));
 
-            while (!nextDate.after(endDate)) {
-                calendar.setTime(nextDate);
-                switch (dropdownId) {
-                    case 3: // Monthly
-                        calendar.add(Calendar.MONTH, 1);
-                        break;
-                    case 7: // Bi-weekly
-                        calendar.add(Calendar.WEEK_OF_YEAR, 2);
-                        break;
-                    case 8: // Every Six Months
-                        calendar.add(Calendar.MONTH, 6);
-                        break;
-                    case 9: // Every Two Months
-                        calendar.add(Calendar.MONTH, 2);
-                        break;
-                    case 10: // Every Three Months
-                        calendar.add(Calendar.MONTH, 3);
-                        break;
-                    case 11: // Yearly
-                        calendar.add(Calendar.YEAR, 1);
-                        break;
-                    default:
-                        System.out.println("Unsupported frequency for bill ID: " + bill.getBillId());
-                        break;
-                }
-                nextDate = calendar.getTime();
-                if (!nextDate.after(endDate)) {
-                    Transaction toAdd = createTransaction(bill, nextDate);
-                    boolean transactionExists = listOfCurrentPaidTransactions.stream()
-                            .anyMatch(t -> t.getDate().equals(toAdd.getDate()) && t.getBill().equals(bill));
-
-                    if (!transactionExists) {
-                        transactionsToSave.add(toAdd);
+                        if (!transactionExists) {
+                            transactionsToSave.add(toAdd);
+                        }
                     }
                 }
             }
-        }
-        try {
+
             transactionRepository.deleteAll(listOfCurrentNotPaidTransactions);
             transactionRepository.saveAll(transactionsToSave);
         } catch (Exception e) {
             System.out.println(e);
         }
     }
-
     private Transaction createTransaction(Bill bill, Date date) {
         Transaction toReturn = new Transaction();
         toReturn.setDate(date);
