@@ -1,6 +1,5 @@
 package com.finance.treasuretracker.service;
 
-import com.finance.treasuretracker.service.BankRecordServiceInterface;
 import com.finance.treasuretracker.model.DropdownType;
 import com.finance.treasuretracker.model.repository.DropdownTypeRepository;
 import org.springframework.beans.factory.annotation.Autowired;

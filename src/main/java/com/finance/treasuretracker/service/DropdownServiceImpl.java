@@ -1,6 +1,5 @@
 package com.finance.treasuretracker.service;
 
-import com.finance.treasuretracker.service.DropdownServiceInterface;
 import com.finance.treasuretracker.model.Dropdown;
 import com.finance.treasuretracker.model.DropdownType;
 import com.finance.treasuretracker.model.repository.DropdownRepository;

@@ -1,6 +1,5 @@
 package com.finance.treasuretracker.model.dto;
 
-
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -25,8 +24,7 @@ public class SummaryViewDTO implements Converter<SummaryViewInterface, SummaryVi
     BigDecimal amountPaid;
     Long totalCount;
     Long expectedTotalCount;
-    Date firstDate;
-
+    String dueDate;
 
     @Override
     public SummaryViewDTO convert(SummaryViewInterface value) {
@@ -41,7 +39,7 @@ public class SummaryViewDTO implements Converter<SummaryViewInterface, SummaryVi
         this.amountPaid = value.getAmountPaid();
         this.totalCount = value.getTotalCount();
         this.expectedTotalCount = 0L;
-        //this.firstDate = value.getFirstDate();
+        this.dueDate = value.getDueDate();
         return this;
     }
 

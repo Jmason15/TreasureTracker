@@ -9,7 +9,6 @@ import com.finance.treasuretracker.controller.DropdownController;
 import com.finance.treasuretracker.model.Account;
 import com.finance.treasuretracker.model.Bill;
 import com.finance.treasuretracker.model.Dropdown;
-import com.finance.treasuretracker.model.HiddenCellRenderer;
 import com.finance.treasuretracker.view.tabs.bills.enums.BillColumnENUM;
 import com.finance.treasuretracker.view.tabs.bills.utils.BillButtonEditor;
 import com.finance.treasuretracker.view.tabs.utils.ButtonRenderer;

@@ -16,16 +16,21 @@ public class DueDateHighlighter extends DefaultTableCellRenderer {
 
         boolean paid = Boolean.parseBoolean(table.getValueAt(row, table.getColumn("Paid").getModelIndex()).toString());
         Date dueDate = null;
-        try {
-            dueDate = DATE_FORMAT.parse(table.getValueAt(row, table.getColumn("Date").getModelIndex()).toString());
-        } catch (ParseException e) {
+        if (table.getValueAt(row, table.getColumn("Date").getModelIndex()) == null
+                || table.getValueAt(row, table.getColumn("Date").getModelIndex()).toString().isEmpty()) {
+            c.setBackground(Color.BLACK);
+        }else{
+            try {
+                dueDate = DATE_FORMAT.parse(table.getValueAt(row, table.getColumn("Date").getModelIndex()).toString());
+            } catch (ParseException e) {
+                c.setBackground(Color.BLACK);
+            }
 
-        }
-
-        if (!paid && dueDate != null && dueDate.before(new Date())) {
-            c.setBackground(Color.RED);
-        } else {
-            c.setBackground(Color.WHITE);
+            if (!paid && dueDate != null && dueDate.before(new Date())) {
+                c.setBackground(Color.RED);
+            } else {
+                c.setBackground(Color.WHITE);
+            }
         }
 
         return c;

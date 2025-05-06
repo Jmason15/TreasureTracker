@@ -32,7 +32,7 @@ public class BelowThresholdRedHighlighter extends DefaultTableCellRenderer {
                     c.setForeground(table.getForeground());
                 }
             } catch (ParseException e) {
-
+                c.setBackground(Color.BLACK);
             }
         }
 

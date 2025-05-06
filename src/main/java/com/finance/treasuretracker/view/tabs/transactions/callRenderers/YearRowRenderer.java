@@ -2,7 +2,6 @@ package com.finance.treasuretracker.view.tabs.transactions.callRenderers;
 
 import javax.swing.*;
 import javax.swing.table.DefaultTableCellRenderer;
-import javax.swing.table.TableCellRenderer;
 import java.awt.*;
 
 public class YearRowRenderer extends DefaultTableCellRenderer {

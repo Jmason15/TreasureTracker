@@ -45,10 +45,6 @@ public class MainView {
         frame.setVisible(true);
     }
 
-    private static void setupPanel(JPanel summaryPanel) {
-        summaryPanel.setLayout(new BorderLayout());
-        JLabel summaryLabel = new JLabel("Summary Information");
-        summaryPanel.add(summaryLabel, BorderLayout.NORTH);
-    }
+   
 }
 

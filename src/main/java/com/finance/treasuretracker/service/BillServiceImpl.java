@@ -57,73 +57,104 @@ public class BillServiceImpl implements BillServiceInterface {
     @Override
     @Transactional
     public void correctTransations() {
-        List<Bill> listOfBills = billRepository.findAll();
-        List<Transaction> listOfCurrentTransactions = transactionRepository.findAll();
-        List<Transaction> listOfCurrentNotPaidTransactions = listOfCurrentTransactions.stream()
-                .filter(e -> !e.getPaid())
-                .toList();
-        List<Transaction> listOfCurrentPaidTransactions = listOfCurrentTransactions.stream()
-                .filter(Transaction::getPaid)
-                .toList();
-        Calendar calendar = Calendar.getInstance();
-        calendar.set(Calendar.DAY_OF_YEAR, 1); // First day of the current year
-        calendar.add(Calendar.YEAR, 2);
-        calendar.add(Calendar.DAY_OF_YEAR, -1); // Last day of the next year
-        Date lastDayOfNextYear = calendar.getTime();
-
-        List<Transaction> transactionsToSave = new ArrayList<>();
         try {
-            for (Bill bill : listOfBills) {
-                int dropdownId = bill.getFrequency().getDropdownId().intValue();
-                Date nextDate = bill.getDueDay();
-                Date endDate = bill.getEndDate() != null ? bill.getEndDate() : lastDayOfNextYear;
+            // Get all existing data
+            List<Bill> bills = billRepository.findAll();
+            List<Transaction> currentTransactions = transactionRepository.findAll();
 
-                while (!nextDate.after(endDate)) {
-                    calendar.setTime(nextDate);
-                    switch (dropdownId) {
-                        case 3: // Monthly
-                            calendar.add(Calendar.MONTH, 1);
-                            break;
-                        case 7: // Bi-weekly
-                            calendar.add(Calendar.WEEK_OF_YEAR, 2);
-                            break;
-                        case 8: // Every Six Months
-                            calendar.add(Calendar.MONTH, 6);
-                            break;
-                        case 9: // Every Two Months
-                            calendar.add(Calendar.MONTH, 2);
-                            break;
-                        case 10: // Every Three Months
-                            calendar.add(Calendar.MONTH, 3);
-                            break;
-                        case 11: // Yearly
-                            calendar.add(Calendar.YEAR, 1);
-                            break;
-                        case 12: // One time
-                            break;
-                        default:
-                            System.out.println("Unsupported frequency for bill ID: " + bill.getBillId());
-                            break;
-                    }
-                    nextDate = calendar.getTime();
-                    if (!nextDate.after(endDate)) {
-                        Transaction toAdd = createTransaction(bill, nextDate);
-                        boolean transactionExists = listOfCurrentPaidTransactions.stream()
-                                .anyMatch(t -> t.getDate().equals(toAdd.getDate()) && t.getBill() != null && t.getBill().equals(bill));
+            // Split transactions by paid status
+            List<Transaction> unpaidTransactions = currentTransactions.stream()
+                    .filter(e -> !e.getPaid())
+                    .toList();
+            List<Transaction> paidTransactions = currentTransactions.stream()
+                    .filter(Transaction::getPaid)
+                    .toList();
 
-                        if (!transactionExists) {
-                            transactionsToSave.add(toAdd);
-                        }
-                    }
-                }
-            }
+            // Calculate end date (last day of next year)
+            Date lastDayOfNextYear = calculateEndDate();
+            System.out.println("End date set to: " + lastDayOfNextYear);
 
-            transactionRepository.deleteAll(listOfCurrentNotPaidTransactions);
+            // Generate new transactions
+            List<Transaction> transactionsToSave = generateTransactionsForBills(bills, paidTransactions,
+                    lastDayOfNextYear);
+
+            System.out.println("Generated " + transactionsToSave.size() + " new transactions");
+
+            // Batch update database
+            transactionRepository.deleteAll(unpaidTransactions);
             transactionRepository.saveAll(transactionsToSave);
         } catch (Exception e) {
-            System.out.println(e);
+            e.printStackTrace(); // Better error logging
         }
     }
+
+    private Date calculateEndDate() {
+        Calendar calendar = Calendar.getInstance();
+        calendar.set(Calendar.DAY_OF_YEAR, 1); // First day of current year
+        calendar.add(Calendar.YEAR, 2); // Add two years
+        calendar.add(Calendar.DAY_OF_YEAR, -1); // Last day of next year
+        return calendar.getTime();
+    }
+
+    private List<Transaction> generateTransactionsForBills(List<Bill> bills,
+            List<Transaction> paidTransactions, Date lastDayOfNextYear) {
+        List<Transaction> transactionsToSave = new ArrayList<>();
+
+        for (Bill bill : bills) {
+            System.out.println("Processing bill: " + bill.getBillId() + " - Due date: " + bill.getDueDay());
+
+            if (bill.getDueDay() == null) {
+                System.out.println("Skipping bill " + bill.getBillId() + " - No due date");
+                continue;
+            }
+
+            Date currentDate = bill.getDueDay();
+            Date endDate = bill.getEndDate() != null ? bill.getEndDate() : lastDayOfNextYear;
+
+            // Ensure we're working with clean dates (no time components)
+            currentDate = removeTimeFromDate(currentDate);
+            endDate = removeTimeFromDate(endDate);
+
+            while (currentDate.compareTo(endDate) <= 0) { // Changed to use compareTo
+                // Create transaction for current date
+                Transaction newTransaction = createTransaction(bill, currentDate);
+                if (!isTransactionExists(newTransaction, paidTransactions, bill)) {
+                    transactionsToSave.add(newTransaction);
+                    System.out.println("Added transaction for bill " + bill.getBillId() + " on date: " + currentDate);
+                } else {
+                    System.out.println(
+                            "Skipped existing transaction for bill " + bill.getBillId() + " on date: " + currentDate);
+                }
+
+                // Calculate next date
+                currentDate = calculateNextDueDate(currentDate, bill.getFrequency().getDisplay());
+                currentDate = removeTimeFromDate(currentDate); // Ensure clean date after calculation
+            }
+        }
+        return transactionsToSave;
+    }
+
+    private Date removeTimeFromDate(Date date) {
+        if (date == null)
+            return null;
+        Calendar cal = Calendar.getInstance();
+        cal.setTime(date);
+        cal.set(Calendar.HOUR_OF_DAY, 0);
+        cal.set(Calendar.MINUTE, 0);
+        cal.set(Calendar.SECOND, 0);
+        cal.set(Calendar.MILLISECOND, 0);
+        return cal.getTime();
+    }
+
+    private boolean isTransactionExists(Transaction newTransaction,
+            List<Transaction> paidTransactions, Bill bill) {
+        Date transactionDate = removeTimeFromDate(newTransaction.getDate());
+        return paidTransactions.stream()
+                .anyMatch(t -> removeTimeFromDate(t.getDate()).equals(transactionDate)
+                        && t.getBill() != null
+                        && t.getBill().equals(bill));
+    }
+
     private Transaction createTransaction(Bill bill, Date date) {
         Transaction toReturn = new Transaction();
         toReturn.setDate(date);
@@ -132,6 +163,38 @@ public class BillServiceImpl implements BillServiceInterface {
         toReturn.setAccount(bill.getAccount());
 
         return toReturn;
+    }
+
+    private Date calculateNextDueDate(Date currentDate, String frequency) {
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTime(currentDate);
+
+        switch (frequency) {
+            case "Monthly":
+                calendar.add(Calendar.MONTH, 1);
+                break;
+            case "Bi-Weekly":
+                calendar.add(Calendar.WEEK_OF_YEAR, 2);
+                break;
+            case "Six Months":
+                calendar.add(Calendar.MONTH, 6);
+                break;
+            case "Every Two Months":
+                calendar.add(Calendar.MONTH, 2);
+                break;
+            case "Every Three Months":
+                calendar.add(Calendar.MONTH, 3);
+                break;
+            case "Yearly":
+                calendar.add(Calendar.YEAR, 1);
+                break;
+            case "One Time":
+                break;
+            default:
+                System.out.println("Unsupported frequency for bill");
+                break;
+        }
+        return calendar.getTime();
     }
 
 }
